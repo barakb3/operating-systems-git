@@ -1,17 +1,19 @@
 
 #include "os.h"
 
+#define NO_MAPPING	(~0ULL)
+
 void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn)
 {
-    uint64_t phys_level_base = pt, *virt_level_base;
+    uint64_t phys_level_base = (pt << 12), *virt_level_base;
     int index, level = 1, valid;
     do
     {
         virt_level_base = phys_to_virt(phys_level_base); /* get the base of the current level */
         index = (vpn >> ((5 - level) * 9)) & 0x1ff; /* get the corresponding symbol */
-        phys_level_base = virt_level_base[index]; /* get the next pte */
+        phys_level_base = (virt_level_base[index] >> 12) << 12 ; /* get the next pte */
         level++;
-        valid = phys_level_base % 2; /* LSB of the pte is the valid bit*/
+        valid = virt_level_base[index] % 2; /* LSB of the pte is the valid bit*/
     } while (level <= 5 && valid == 1);
 
     if (ppn == NO_MAPPING) /* destroy */
@@ -27,35 +29,35 @@ void page_table_update(uint64_t pt, uint64_t vpn, uint64_t ppn)
     {
         while (level <= 5) /* we had valid == 0 */
         {
-            phys_level_base = alloc_page_frame();
-            virt_level_base[index] = phys_level_base;
+            phys_level_base = alloc_page_frame() << 12;
+            virt_level_base[index] = phys_level_base + 1;
             virt_level_base = phys_to_virt(phys_level_base);
             index = (vpn >> ((5 - level) * 9)) & 0x1ff;
             level++;
         }
         /* when level == 6 update as follows: */
-        virt_level_base[index] = (ppn << 12) | 1;
+        virt_level_base[index] = (ppn << 12) + 1;
     }
 }
 
 uint64_t page_table_query(uint64_t pt, uint64_t vpn)
 {
 
-    uint64_t phys_level_base = pt, *virt_level_base;
+    uint64_t phys_level_base = (pt << 12), *virt_level_base;
     int index, level = 1, valid;
     do
     {
         virt_level_base = phys_to_virt(phys_level_base); /* get the base of the current level */
         index = (vpn >> ((5 - level) * 9)) & 0x1ff; /* get the corresponding symbol */
-        phys_level_base = virt_level_base[index]; /* get the next pte */
+        phys_level_base = (virt_level_base[index] >> 12) << 12; /* get the next pte */
         level++;
-        valid = phys_level_base % 2; /* LSB of the pte is the valid bit*/
+        valid = virt_level_base[index] % 2; /* LSB of the pte is the valid bit*/
+        
     } while (level <= 5 && valid == 1);
-
     if (level == 6 && valid == 1)
     /* virt_level_base points to the level where the pages are and the physical address is valid */
     {
-        return virt_level_base[index];
+        return (virt_level_base[index] >> 12);
     }
     else /* create */
     {
