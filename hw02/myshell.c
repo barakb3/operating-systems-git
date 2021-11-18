@@ -280,6 +280,7 @@ int pipe_exec(int i, char **arglist)
             /* Close read and write end */
             close(writerfds);
             close(readerfds);
+            printf("%d\n", ca_pid);
             if (wait_child_process(ca_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
@@ -297,6 +298,7 @@ int pipe_exec(int i, char **arglist)
 
 int wait_child_process(pid_t c_pid)
 {
+    printf("%d\n", c_pid);
     int exit_status;
     if (waitpid(c_pid, &exit_status, 0) == -1 && errno != ECHILD && errno != EINTR)
     {
