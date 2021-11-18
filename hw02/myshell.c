@@ -126,9 +126,14 @@ int background_exec(int count, char **arglist)
     {
         /* Child's process */
         arglist[count] = NULL;
-        execvp(arglist[0], arglist);
-        /* If reached here then executing arglist[0] failed */
-        exit(1);
+        
+        /* Running the command*/
+        if (execvp(arglist[0], arglist))
+        {
+            /* If reached here then executing arglist[0] failed */
+            fprintf(stderr, "Failed in execvp due to errno: %s", strerror(errno));
+            exit(1);
+        }
     }
     else
     {
