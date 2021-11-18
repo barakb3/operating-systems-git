@@ -15,10 +15,7 @@ int background_exec(int count, char **arglist);
 int redirection_exec(int count, char **arglist, char *filename);
 int pipe_exec(int i, char **arglist);
 int wait_child_process(pid_t c_pid);
-/*
-int register_signal_handling();
-void my_signal_handler(int signum, siginfo_t *info, void *ptr);
-*/
+
 int prepare(void)
 {
     
@@ -27,14 +24,6 @@ int prepare(void)
         fprintf(stderr, "Failed registrating signal handler due to errno: %s", strerror(errno));
         return -1;
     }
-    
-    /*
-    if (signal(SIGINT, SIG_IGN) == SIG_ERR || register_signal_handling() == -1)
-    {
-        fprintf(stderr, "Failed registrating signal handler due to errno: %s", strerror(errno));
-        return -1;
-    }
-    */
     return 0;
 }
 
@@ -314,23 +303,3 @@ int wait_child_process(pid_t c_pid)
         return 1;
     }
 }
-/*
-int register_signal_handling()
-{
-    struct sigaction new_action;
-    memset(&new_action, 0, sizeof(new_action));
-
-    new_action.sa_sigaction = my_signal_handler;
-    new_action.sa_flags = SA_SIGINFO;
-
-    // Overwrite default behavior for ctrl+c
-    return sigaction(SIGCHLD, &new_action, NULL);
-}
-
-void my_signal_handler(int signum, siginfo_t *info, void *ptr)
-{
-    pid_t pid = info->si_pid;
-    wait_child_process(pid);
-    return;
-}
-*/
