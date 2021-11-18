@@ -15,26 +15,26 @@ int background_exec(int count, char **arglist);
 int redirection_exec(int count, char **arglist, char *filename);
 int pipe_exec(int i, char **arglist);
 int wait_child_process(pid_t c_pid);
-
+/*
 int register_signal_handling();
 void my_signal_handler(int signum, siginfo_t *info, void *ptr);
-
+*/
 int prepare(void)
 {
-    /*
+    
     if (signal(SIGINT, SIG_IGN) == SIG_ERR || signal(SIGCHLD, SIG_IGN) == SIG_ERR)
     {
         fprintf(stderr, "Failed registrating signal handler due to errno: %s", strerror(errno));
         return -1;
     }
-    */
     
+    /*
     if (signal(SIGINT, SIG_IGN) == SIG_ERR || register_signal_handling() == -1)
     {
         fprintf(stderr, "Failed registrating signal handler due to errno: %s", strerror(errno));
         return -1;
     }
-    
+    */
     return 0;
 }
 
@@ -311,7 +311,7 @@ int wait_child_process(pid_t c_pid)
         return 1;
     }
 }
-
+/*
 int register_signal_handling()
 {
     struct sigaction new_action;
@@ -330,3 +330,4 @@ void my_signal_handler(int signum, siginfo_t *info, void *ptr)
     wait_child_process(pid);
     return;
 }
+*/
