@@ -3,6 +3,20 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <signal.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+
+int prepare(void);
+int process_arglist(int count, char **arglist);
+int finalize(void);
+int normal_exec(int count, char **arglist);
+int background_exec(int count, char **arglist);
+int redirection_exec(int count, char **arglist, char *filename);
+int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b);
+int wait_child_process(pid_t c_pid, int *exit_status);
+int register_signal_handling();
+int my_signal_handler(int signum, siginfo_t *info, void *ptr);
 
 int prepare(void)
 {
