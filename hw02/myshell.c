@@ -13,7 +13,7 @@ int finalize(void);
 int normal_exec(int count, char **arglist);
 int background_exec(int count, char **arglist);
 int redirection_exec(int count, char **arglist, char *filename);
-int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b);
+int pipe_exec(int i, char **arglist);
 int wait_child_process(pid_t c_pid);
 int register_signal_handling();
 void my_signal_handler(int signum, siginfo_t *info, void *ptr);
@@ -49,7 +49,7 @@ int process_arglist(int count, char **arglist)
         else if (!strcmp(token, "|"))
         {
             arglist[i] = NULL;
-            return pipe_exec(i, arglist, count - 1 - i, arglist + i + 1);
+            return pipe_exec(i, arglist);
         }
     }
     return normal_exec(count, arglist);
@@ -181,7 +181,7 @@ int redirection_exec(int count, char **arglist, char *filename)
     return parent_status;
 }
 
-int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
+int pipe_exec(int i, char **arglist)
 {
     int parent_status = 1; /* 0 means that the main process has encountered an error */
     int pipefds[2], readerfds, writerfds;
@@ -222,7 +222,7 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
         }
 
         /* Running the command*/
-        if (execvp(arglist_a[0], arglist_a))
+        if (execvp(arglist[0], arglist))
         {
             /* If reached here then executing arglist[0] failed */
             fprintf(stderr, "Failed in execvp due to errno: %s", strerror(errno));
@@ -259,7 +259,7 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
             }
 
             /* Running the command*/
-            if (execvp(arglist_b[0], arglist_b))
+            if (execvp(arglist[i + 1], &arglist[i + 1]))
             {
                 /* If reached here then executing arglist[0] failed */
                 fprintf(stderr, "Failed in execvp due to errno: %s", strerror(errno));
