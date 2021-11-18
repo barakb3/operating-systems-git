@@ -195,8 +195,9 @@ int pipe_exec(int i, char **arglist)
 {
     int parent_status = 1; /* 0 means that the main process has encountered an error */
     int pipefds[2], readerfds, writerfds;
-    pid_t ca_pid = fork(), cb_pid;
+    pid_t ca_pid , cb_pid;
     printf("start piping");
+    
     if (pipe(pipefds) < 0)
     {
         /* Error when trying to create a pipe */
@@ -207,7 +208,7 @@ int pipe_exec(int i, char **arglist)
     }
     readerfds = pipefds[0];
     writerfds = pipefds[1];
-
+    ca_pid = fork();
     if (ca_pid < 0)
     {
         /* Error when trying to create a new process */
