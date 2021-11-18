@@ -15,10 +15,10 @@ int background_exec(int count, char **arglist);
 int redirection_exec(int count, char **arglist, char *filename);
 int pipe_exec(int i, char **arglist);
 int wait_child_process(pid_t c_pid);
-/*
+
 int register_signal_handling();
 void my_signal_handler(int signum, siginfo_t *info, void *ptr);
-*/
+
 int prepare(void)
 {
     /*
@@ -28,13 +28,13 @@ int prepare(void)
         return -1;
     }
     */
-    /*
+    
     if (signal(SIGINT, SIG_IGN) == SIG_ERR || register_signal_handling() == -1)
     {
         fprintf(stderr, "Failed registrating signal handler due to errno: %s", strerror(errno));
         return -1;
     }
-    */
+    
     return 0;
 }
 
@@ -196,24 +196,22 @@ int pipe_exec(int i, char **arglist)
     int parent_status = 1; /* 0 means that the main process has encountered an error */
     int pipefds[2], readerfds, writerfds;
     pid_t ca_pid , cb_pid;
-    printf("start piping");
     
     if (pipe(pipefds) < 0)
     {
         /* Error when trying to create a pipe */
         fprintf(stderr, "Failed piping due to errno: %s", strerror(errno));
-        printf("Error when trying to create a pipe");
         /* return negative number */
         parent_status = 0;
     }
     readerfds = pipefds[0];
     writerfds = pipefds[1];
+
     ca_pid = fork();
     if (ca_pid < 0)
     {
         /* Error when trying to create a new process */
         fprintf(stderr, "Failed forking due to errno: %s", strerror(errno));
-        printf("/* Error when trying to create a new process */");
         parent_status = 0;
     }
     else if (ca_pid == 0)
@@ -249,7 +247,6 @@ int pipe_exec(int i, char **arglist)
         {
             /* Error when trying to create a new process */
             fprintf(stderr, "Failed forking due to errno: %s", strerror(errno));
-            printf("/* Error when trying to create a new process child b */");
             parent_status = 0;
         }
         else if (cb_pid == 0)
@@ -286,20 +283,15 @@ int pipe_exec(int i, char **arglist)
             if (wait_child_process(ca_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
-                printf("/* An actual error that requires exiting the shell child a */");
                 parent_status = 0;
             }
-            printf("waited to a\n");
             if (wait_child_process(cb_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
-                printf("/* An actual error that requires exiting the shell child b */");
                 parent_status = 0;
             }
-            printf("waited to b\n");
         }
     }
-    printf("Pipe reached return, return value is: %d", parent_status);
     return parent_status;
 }
 
@@ -317,7 +309,7 @@ int wait_child_process(pid_t c_pid)
         return 1;
     }
 }
-/*
+
 int register_signal_handling()
 {
     struct sigaction new_action;
@@ -336,4 +328,3 @@ void my_signal_handler(int signum, siginfo_t *info, void *ptr)
     wait_child_process(pid);
     return;
 }
-*/
