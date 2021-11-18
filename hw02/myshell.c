@@ -220,6 +220,7 @@ int pipe_exec(int i, char **arglist)
         /* Close unused read end */
         close(readerfds);
         dup2(writerfds, STDOUT_FILENO);
+        close(writerfds);
 
         /* Restore default behavior of SIGINT */
         if (signal(SIGINT, SIG_DFL) == SIG_ERR)
@@ -256,6 +257,7 @@ int pipe_exec(int i, char **arglist)
             /* Close unused write end */
             close(writerfds);
             dup2(readerfds, STDIN_FILENO);
+            close(readerfds);
 
             /* Restore default behavior of SIGINT */
             if (signal(SIGINT, SIG_DFL) == SIG_ERR)
@@ -284,12 +286,14 @@ int pipe_exec(int i, char **arglist)
                 printf("/* An actual error that requires exiting the shell child a */");
                 parent_status = 0;
             }
+            printf("waited to a\n");
             if (wait_child_process(cb_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
                 printf("/* An actual error that requires exiting the shell child b */");
                 parent_status = 0;
             }
+            printf("waited to b\n");
         }
     }
     printf("Pipe reached return, return value is: %d", parent_status);
