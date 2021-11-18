@@ -16,7 +16,7 @@ int redirection_exec(int count, char **arglist, char *filename);
 int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b);
 int wait_child_process(pid_t c_pid);
 int register_signal_handling();
-int my_signal_handler(int signum, siginfo_t *info, void *ptr);
+void my_signal_handler(int signum, siginfo_t *info, void *ptr);
 
 int prepare(void)
 {
@@ -305,10 +305,10 @@ int register_signal_handling()
     return sigaction(SIGCHLD, &new_action, NULL);
 }
 
-int my_signal_handler(int signum, siginfo_t *info, void *ptr)
+void my_signal_handler(int signum, siginfo_t *info, void *ptr)
 {
     pid_t pid = info->si_pid;
     int exit_status;
-    wait_child_process(pid, &exit_status);
-    return exit_status;
+    wait_child_process(pid);
+    return;
 }
