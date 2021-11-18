@@ -21,11 +21,13 @@ void my_signal_handler(int signum, siginfo_t *info, void *ptr);
 */
 int prepare(void)
 {
+    /*
     if (signal(SIGINT, SIG_IGN) == SIG_ERR || signal(SIGCHLD, SIG_IGN) == SIG_ERR)
     {
         fprintf(stderr, "Failed registrating signal handler due to errno: %s", strerror(errno));
         return -1;
     }
+    */
     /*
     if (signal(SIGINT, SIG_IGN) == SIG_ERR || register_signal_handling() == -1)
     {
