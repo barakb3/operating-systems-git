@@ -220,7 +220,6 @@ int pipe_exec(int i, char **arglist)
         /* Close unused read end */
         close(readerfds);
         dup2(writerfds, STDOUT_FILENO);
-        close(writerfds);
 
         /* Restore default behavior of SIGINT */
         if (signal(SIGINT, SIG_DFL) == SIG_ERR)
@@ -257,7 +256,6 @@ int pipe_exec(int i, char **arglist)
             /* Close unused write end */
             close(writerfds);
             dup2(readerfds, STDIN_FILENO);
-            close(readerfds);
 
             /* Restore default behavior of SIGINT */
             if (signal(SIGINT, SIG_DFL) == SIG_ERR)
