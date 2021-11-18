@@ -186,7 +186,7 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
     int parent_status = 1; /* 0 means that the main process has encountered an error */
     int pipefds[2], readerfds, writerfds;
     pid_t ca_pid = fork(), cb_pid;
-
+    printf("start piping");
     if (pipe(pipefds) < 0)
     {
         /* Error when trying to create a pipe */
@@ -286,6 +286,7 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
             }
         }
     }
+    printf("Pipe reached return");
     return parent_status;
 }
 
