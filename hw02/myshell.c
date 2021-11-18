@@ -191,6 +191,7 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
     {
         /* Error when trying to create a pipe */
         fprintf(stderr, "Failed piping due to errno: %s", strerror(errno));
+        printf("Error when trying to create a pipe");
         /* return negative number */
         parent_status = 0;
     }
@@ -201,6 +202,7 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
     {
         /* Error when trying to create a new process */
         fprintf(stderr, "Failed forking due to errno: %s", strerror(errno));
+        printf("/* Error when trying to create a new process */");
         parent_status = 0;
     }
     else if (ca_pid == 0)
@@ -230,13 +232,13 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
     else
     {
         /* Parent's process */
-        /* Close unused write end for parent's and second child's processes */
-        close(writerfds);
+        
         cb_pid = fork();
         if (cb_pid < 0)
         {
             /* Error when trying to create a new process */
             fprintf(stderr, "Failed forking due to errno: %s", strerror(errno));
+            printf("/* Error when trying to create a new process child b */");
             parent_status = 0;
         }
         else if (cb_pid == 0)
@@ -244,6 +246,8 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
             /* Second child's process */
 
             /* Unused write end has already closed */
+            /* Close unused write end */
+            close(writerfds);
             dup2(readerfds, STDIN_FILENO);
             close(readerfds);
 
@@ -265,17 +269,19 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
         else
         {
             /* Again parent's process */
-            /* Close read end */
-            /* Unused write end has already closed */
+            /* Close read and write end */
+            close(writerfds);
             close(readerfds);
             if (wait_child_process(ca_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
+                printf("/* An actual error that requires exiting the shell child a */");
                 parent_status = 0;
             }
             if (wait_child_process(cb_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
+                printf("/* An actual error that requires exiting the shell child b */");
                 parent_status = 0;
             }
         }
