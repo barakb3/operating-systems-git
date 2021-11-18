@@ -268,7 +268,12 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
             /* Close read end */
             /* Unused write end has already closed */
             close(readerfds);
-            if (wait_child_process(ca_pid) == 0 || wait_child_process(cb_pid) == 0)
+            if (wait_child_process(ca_pid) == 0)
+            {
+                /* An actual error that requires exiting the shell */
+                parent_status = 0;
+            }
+            if (wait_child_process(cb_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
                 parent_status = 0;
