@@ -308,7 +308,6 @@ int register_signal_handling()
 void my_signal_handler(int signum, siginfo_t *info, void *ptr)
 {
     pid_t pid = info->si_pid;
-    int exit_status;
     wait_child_process(pid);
     return;
 }
