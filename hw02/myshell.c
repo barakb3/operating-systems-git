@@ -286,7 +286,7 @@ int pipe_exec(int i, char **arglist)
             }
         }
     }
-    printf("Pipe reached return");
+    printf("Pipe reached return, return value is: %d", parent_status);
     return parent_status;
 }
 
