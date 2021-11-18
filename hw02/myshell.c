@@ -14,7 +14,7 @@ int normal_exec(int count, char **arglist);
 int background_exec(int count, char **arglist);
 int redirection_exec(int count, char **arglist, char *filename);
 int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b);
-int wait_child_process(pid_t c_pid, int *exit_status);
+int wait_child_process(pid_t c_pid);
 int register_signal_handling();
 int my_signal_handler(int signum, siginfo_t *info, void *ptr);
 
@@ -52,7 +52,7 @@ int process_arglist(int count, char **arglist)
             return pipe_exec(i, arglist, count - 1 - i, arglist + i + 1);
         }
     }
-    return normal_ex(count, arglist);
+    return normal_exec(count, arglist);
 }
 
 int finalize(void)
@@ -63,7 +63,6 @@ int finalize(void)
 int normal_exec(int count, char **arglist)
 {
     int parent_status = 1; /* 0 means that the main process has encountered an error */
-    int *exit_status;
     pid_t child_pid = fork();
     if (child_pid < 0)
     {
@@ -93,7 +92,7 @@ int normal_exec(int count, char **arglist)
     else
     {
         /* Parent's process */
-        if (wait_child_process(child_pid, exit_status) == 0)
+        if (wait_child_process(child_pid) == 0)
         {
             /* An actual error that requires exiting the shell */
             parent_status = 0;
@@ -105,7 +104,7 @@ int normal_exec(int count, char **arglist)
 int background_exec(int count, char **arglist)
 {
     int parent_status = 1; /* 0 means that the main process has encountered an error */
-    pid_t c_pid;
+    pid_t c_pid = fork();
 
     if (c_pid < 0)
     {
@@ -131,7 +130,6 @@ int background_exec(int count, char **arglist)
 int redirection_exec(int count, char **arglist, char *filename)
 {
     int parent_status = 1; /* 0 means that the main process has encountered an error */
-    int *exit_status;
     int fd;
     pid_t child_pid;
 
@@ -174,7 +172,7 @@ int redirection_exec(int count, char **arglist, char *filename)
     else
     {
         /* Parent's process */
-        if (wait_child_process(child_pid, exit_status) == 0)
+        if (wait_child_process(child_pid) == 0)
         {
             /* An actual error that requires exiting the shell */
             parent_status = 0;
@@ -186,7 +184,6 @@ int redirection_exec(int count, char **arglist, char *filename)
 int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
 {
     int parent_status = 1; /* 0 means that the main process has encountered an error */
-    int *exit_status;
     int pipefds[2], readerfds, writerfds;
     pid_t ca_pid = fork(), cb_pid;
 
@@ -271,7 +268,7 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
             /* Close read end */
             /* Unused write end has already closed */
             close(readerfds);
-            if (wait_child_process(ca_pid, exit_status) == 0 || wait_child_process(cb_pid, exit_status) == 0)
+            if (wait_child_process(ca_pid) == 0 || wait_child_process(cb_pid) == 0)
             {
                 /* An actual error that requires exiting the shell */
                 parent_status = 0;
@@ -281,9 +278,10 @@ int pipe_exec(int count_a, char **arglist_a, int count_b, char **arglist_b)
     return parent_status;
 }
 
-int wait_child_process(pid_t c_pid, int *exit_status)
+int wait_child_process(pid_t c_pid)
 {
-    if (waitpid(c_pid, exit_status, 0) == -1 && errno != ECHILD && errno != EINTR)
+    int exit_status;
+    if (waitpid(c_pid, &exit_status, 0) == -1 && errno != ECHILD && errno != EINTR)
     {
         /* An actual error that requires exiting the shell */
         fprintf(stderr, "Failed executing wait() due to errno: %s", strerror(errno));
@@ -310,7 +308,7 @@ int register_signal_handling()
 int my_signal_handler(int signum, siginfo_t *info, void *ptr)
 {
     pid_t pid = info->si_pid;
-    int *exit_status;
-    wait_child_process(pid, exit_status);
-    return *exit_status;
+    int exit_status;
+    wait_child_process(pid, &exit_status);
+    return exit_status;
 }
