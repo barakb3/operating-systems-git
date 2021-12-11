@@ -27,7 +27,7 @@ static int __init msgslot_init(void)
 /* unloader */
 static void __exit msgslot_exit(void)
 {
-
+    /* do nothing */
 }
 
 /* Defining initialization and exit functions of the driver */
