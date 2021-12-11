@@ -21,13 +21,14 @@ static int __init msgslot_init(void)
     {
         return 1;
     }
+    printk("Module loaded\n");
     return 0;
 }
 
 /* unloader */
 static void __exit msgslot_exit(void)
 {
-    /* do nothing */
+    printk("Module unloaded\n");
 }
 
 /* Defining initialization and exit functions of the driver */
