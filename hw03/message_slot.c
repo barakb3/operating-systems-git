@@ -11,9 +11,6 @@
 #include <linux/uaccess.h> /* for get_user and put_user */
 #include <linux/slab.h>    /* included for kmalloc flag GFP_KERNEL */
 
-#include <stdlib.h>
-#include <errno.h>
-#include <sys/types.h>
 #include "message_slot.h"
 
 MODULE_LICENSE("GPL");
@@ -56,31 +53,29 @@ static int device_release(struct inode *inode, struct file *file)
     return SUCCESS;
 }
 
-static ssize_t device_read(struct file *file, char __user *buffer, size_t length, loft_t offset)
+static ssize_t device_read(struct file *file, char __user *buffer, size_t length, loff_t *offset)
 {
     NODE *node = (NODE *)file->private_data;
+    int i;
+
     if (node == NULL)
     {
         /* no channel has been set on the file descriptor */
-        errno = EINVAL;
-        return -1;
+        return -EINVAL;
     }
 
     if (node->msg_len == 0)
     {
         /* no message exists on the channel */
-        errno = EWOULDBLOCK;
-        return -1;
+        return -EWOULDBLOCK;
     }
 
     if (length < node->msg_len)
     {
         /* provided buffer is too small */
-        errno = ENOSPC;
-        return -1;
+        return -ENOSPC;
     }
 
-    int i;
     for (i = 0; i < node->msg_len && i < BUF_LEN; i++)
     {
         put_user(node->channel[i], &buffer[i]);
@@ -88,24 +83,23 @@ static ssize_t device_read(struct file *file, char __user *buffer, size_t length
     return i;
 }
 
-static ssize_t device_write(struct file *file, const char __user *buffer, size_t length, loft_t offset)
+static ssize_t device_write(struct file *file, const char __user *buffer, size_t length, loff_t *offset)
 {
     NODE *node = (NODE *)file->private_data;
+    int i;
+
     if (node == NULL)
     {
         /* no channel has been set on the file descriptor */
-        errno = EINVAL;
-        return -1;
+        return -EINVAL;
     }
 
     if (length == 0 || length > 128)
     {
         /* message size error */
-        errno = EMSGSIZE;
-        return -1;
+        return -EMSGSIZE;
     }
 
-    int i;
     for (i = 0; i < length && i < BUF_LEN; i++)
     {
         get_user(node->channel[i], &buffer[i]);
@@ -116,17 +110,16 @@ static ssize_t device_write(struct file *file, const char __user *buffer, size_t
 
 static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsigned int ioctl_param)
 {
-    if (ioctl_command_id != MSG_SLOT_CHANNEL || ioctl_param == 0)
-    {
-        /* invalid arguments when calling ioctl() */
-        errno = EINVAL;
-        return -1;
-    }
-
-    inode *inode = file->d_entry->d_inode;
+    const struct inode *inode = file->f_dentry->d_inode;
     unsigned int minor = iminor(inode);
     NODE *last = devices[minor].head;
     unsigned int channel_id = 0;
+
+    if (ioctl_command_id != MSG_SLOT_CHANNEL || ioctl_param == 0)
+    {
+        /* invalid arguments when calling ioctl() */
+        return -EINVAL;
+    }
 
     while (ioctl_param != channel_id)
     {
@@ -136,8 +129,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsig
             if (last == NULL)
             {
                 /* failed allocating memory */
-                errno = ENOMEM;
-                return -1;
+                return -ENOMEM;
             }
             last->channel_id = ioctl_param;
             last->next = NULL;
@@ -178,7 +170,7 @@ static void __exit msgslot_exit(void)
 {
     int i;
     NODE *curr, *last;
-    for (i = 0; i < 256, i++)
+    for (i = 0; i < 256; i++)
     {
         curr = NULL;
         last = devices[i].head;
