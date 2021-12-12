@@ -2,10 +2,13 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "message_slot.h"
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int fd, bytes_read;
     char *endptr;
@@ -32,7 +35,7 @@ void main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    if (bytes_read = read(fd, buf, BUF_LEN) < 0)
+    if ((bytes_read = read(fd, buf, BUF_LEN)) < 0)
     {
         /* reading failed */
         fprintf(stderr, "Set channel failed.\nerrno: %s", strerror(errno));

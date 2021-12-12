@@ -2,10 +2,13 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "message_slot.h"
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     int fd;
     char *endptr;
