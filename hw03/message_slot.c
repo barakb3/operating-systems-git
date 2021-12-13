@@ -38,21 +38,13 @@ static NODE *devices[256];
 /* device functions */
 static int device_open(struct inode *inode, struct file *file)
 {
-    /*
-    unsigned int minor = iminor(inode);
-    if (devices[minor].initialized == 0)
-    {
-        
-        devices[minor].initialized = 1;
-        devices[minor].head = NULL;
-    }
-    */
-   /* new device */
+    /* do nothing */
     return SUCCESS;
 }
 
 static int device_release(struct inode *inode, struct file *file)
 {
+    /* do nothing */
     return SUCCESS;
 }
 
@@ -201,15 +193,15 @@ static int __init msgslot_init(void)
 static void __exit msgslot_exit(void)
 {
     int i;
-    NODE *curr, *last;
+    NODE *curr, *next;
     for (i = 0; i < 256; i++)
     {
         curr = NULL;
-        last = devices[i];
-        while (last != NULL)
+        next = devices[i];
+        while (next != NULL)
         {
-            curr = last;
-            last = curr->next;
+            curr = next;
+            next = curr->next;
             kfree(curr);
         }
     }
