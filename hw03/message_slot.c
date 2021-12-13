@@ -67,6 +67,12 @@ static ssize_t device_read(struct file *file, char __user *buffer, size_t length
         return -EINVAL;
     }
 
+    if (buffer == NULL)
+    {
+        /* arguments validation */
+        return -EINVAL;
+    }
+    
     if (node->msg_len == 0)
     {
         /* no message exists on the channel */
@@ -94,6 +100,12 @@ static ssize_t device_write(struct file *file, const char __user *buffer, size_t
     if (node == NULL)
     {
         /* no channel has been set on the file descriptor */
+        return -EINVAL;
+    }
+
+    if (buffer == NULL)
+    {
+        /* arguments validation */
         return -EINVAL;
     }
 
