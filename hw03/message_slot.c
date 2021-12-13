@@ -67,12 +67,6 @@ static ssize_t device_read(struct file *file, char __user *buffer, size_t length
         return -EINVAL;
     }
 
-    if (buffer == NULL)
-    {
-        /* arguments validation */
-        return -EINVAL;
-    }
-    
     if (node->msg_len == 0)
     {
         /* no message exists on the channel */
@@ -87,7 +81,11 @@ static ssize_t device_read(struct file *file, char __user *buffer, size_t length
 
     for (i = 0; i < node->msg_len && i < BUF_LEN; i++)
     {
-        put_user(node->channel[i], &buffer[i]);
+        if ((put_user(node->channel[i], &buffer[i])) < 0)
+        {
+            /* arguments validation */
+            return -EINVAL;
+        }
     }
     return i;
 }
@@ -102,13 +100,7 @@ static ssize_t device_write(struct file *file, const char __user *buffer, size_t
         /* no channel has been set on the file descriptor */
         return -EINVAL;
     }
-
-    if (buffer == NULL)
-    {
-        /* arguments validation */
-        return -EINVAL;
-    }
-
+    
     if (length == 0 || length > 128)
     {
         /* message size error */
@@ -117,7 +109,11 @@ static ssize_t device_write(struct file *file, const char __user *buffer, size_t
 
     for (i = 0; i < length && i < BUF_LEN; i++)
     {
-        get_user(node->channel[i], &buffer[i]);
+        if ((get_user(node->channel[i], &buffer[i])) < 0)
+        {
+            /* arguments validation */
+            return -EINVAL;
+        }
     }
 
     node->msg_len = i;
