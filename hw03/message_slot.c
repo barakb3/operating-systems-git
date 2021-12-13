@@ -116,7 +116,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsig
 {
     const struct inode *inode = file->f_inode;
     unsigned int minor = iminor(inode);
-    NODE *last;
+    NODE *curr, *next;
 
     if (ioctl_command_id != MSG_SLOT_CHANNEL || ioctl_param == 0)
     {
@@ -126,7 +126,6 @@ static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsig
 
     if (devices[minor] == NULL)
     {
-        printk(KERN_DEBUG "msg: Debug\n here in sender\n");
         devices[minor] = (NODE *)kmalloc(sizeof(NODE), GFP_KERNEL);
         if (devices[minor] == NULL)
         {
@@ -136,32 +135,33 @@ static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsig
         devices[minor]->channel_id = ioctl_param;
         devices[minor]->next = NULL;
         devices[minor]->msg_len = 0;
-        last = devices[minor];
+        curr = devices[minor];
     }
     else
     {
-        last = devices[minor];
-        printk(KERN_DEBUG "msg: Debug\n here in reader\n");
-        while (ioctl_param != last->channel_id)
+        curr = devices[minor];
+        next = curr->next;
+        while (ioctl_param != curr->channel_id)
         {
-            if (last == NULL)
+            if (next == NULL)
             {
-                printk(KERN_DEBUG "msg: Debug\n shouldn't be here in reader\n");
-                last = (NODE *)kmalloc(sizeof(NODE), GFP_KERNEL);
-                if (last == NULL)
+                curr->next = (NODE *)kmalloc(sizeof(NODE), GFP_KERNEL);
+                if (curr->next == NULL)
                 {
                     /* failed allocating memory */
                     return -ENOMEM;
                 }
-                last->channel_id = ioctl_param;
-                last->next = NULL;
-                last->msg_len = 0;
+                curr->next->channel_id = ioctl_param;
+                curr->next->next = NULL;
+                curr->next->msg_len = 0;
+                curr = curr->next;
                 break;
             }
-            last = last->next;
+            curr = curr->next;
+            next = curr->next;
         }
     }
-    file->private_data = (void *)last;
+    file->private_data = (void *)curr;
     return 0;
 }
 
