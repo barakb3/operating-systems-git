@@ -21,30 +21,33 @@ typedef struct NODE
 {
     unsigned int channel_id;
     char channel[BUF_LEN];
-    unsigned int msg_len;
+    int msg_len;
     struct NODE *next;
 } NODE;
 
 /* a static array (initialized with zeros) for the different devices (minor numbers between 0 to 255) */
+/*
 typedef struct device
 {
     int initialized;
     NODE *head;
 } device;
-
-static device devices[256];
+*/
+static NODE *devices[256];
 
 /* device functions */
 static int device_open(struct inode *inode, struct file *file)
 {
+    /*
     unsigned int minor = iminor(inode);
     if (devices[minor].initialized == 0)
     {
-        /* new device */
+        
         devices[minor].initialized = 1;
         devices[minor].head = NULL;
     }
-
+    */
+   /* new device */
     return SUCCESS;
 }
 
@@ -104,16 +107,16 @@ static ssize_t device_write(struct file *file, const char __user *buffer, size_t
     {
         get_user(node->channel[i], &buffer[i]);
     }
+
     node->msg_len = i;
     return i;
 }
 
-static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsigned int ioctl_param)
+static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsigned long ioctl_param)
 {
-    const struct inode *inode = file->f_dentry->d_inode;
+    const struct inode *inode = file->f_inode;
     unsigned int minor = iminor(inode);
-    NODE *last = devices[minor].head;
-    unsigned int channel_id = 0;
+    NODE *last;
 
     if (ioctl_command_id != MSG_SLOT_CHANNEL || ioctl_param == 0)
     {
@@ -121,22 +124,42 @@ static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsig
         return -EINVAL;
     }
 
-    while (ioctl_param != channel_id)
+    if (devices[minor] == NULL)
     {
-        if (last == NULL)
+        printk(KERN_DEBUG "msg: Debug\n here in sender\n");
+        devices[minor] = (NODE *)kmalloc(sizeof(NODE), GFP_KERNEL);
+        if (devices[minor] == NULL)
         {
-            last = (NODE *)kmalloc(sizeof(NODE), GFP_KERNEL);
+            /* failed allocating memory */
+            return -ENOMEM;
+        }
+        devices[minor]->channel_id = ioctl_param;
+        devices[minor]->next = NULL;
+        devices[minor]->msg_len = 0;
+        last = devices[minor];
+    }
+    else
+    {
+        last = devices[minor];
+        printk(KERN_DEBUG "msg: Debug\n here in reader\n");
+        while (ioctl_param != last->channel_id)
+        {
             if (last == NULL)
             {
-                /* failed allocating memory */
-                return -ENOMEM;
+                printk(KERN_DEBUG "msg: Debug\n shouldn't be here in reader\n");
+                last = (NODE *)kmalloc(sizeof(NODE), GFP_KERNEL);
+                if (last == NULL)
+                {
+                    /* failed allocating memory */
+                    return -ENOMEM;
+                }
+                last->channel_id = ioctl_param;
+                last->next = NULL;
+                last->msg_len = 0;
+                break;
             }
-            last->channel_id = ioctl_param;
-            last->next = NULL;
-            last->msg_len = 0;
-            break;
+            last = last->next;
         }
-        last = last->next;
     }
     file->private_data = (void *)last;
     return 0;
@@ -149,6 +172,7 @@ struct file_operations fops =
         .read = device_read,
         .write = device_write,
         .open = device_open,
+        .unlocked_ioctl = device_ioctl,
         .release = device_release,
 };
 
@@ -173,7 +197,7 @@ static void __exit msgslot_exit(void)
     for (i = 0; i < 256; i++)
     {
         curr = NULL;
-        last = devices[i].head;
+        last = devices[i];
         while (last != NULL)
         {
             curr = last;
