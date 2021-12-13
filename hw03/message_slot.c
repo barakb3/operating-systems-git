@@ -25,14 +25,6 @@ typedef struct NODE
     struct NODE *next;
 } NODE;
 
-/* a static array (initialized with zeros) for the different devices (minor numbers between 0 to 255) */
-/*
-typedef struct device
-{
-    int initialized;
-    NODE *head;
-} device;
-*/
 static NODE *devices[256];
 
 /* device functions */
