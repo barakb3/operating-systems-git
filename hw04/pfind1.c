@@ -163,8 +163,7 @@ int main(int argc, char *argv[])
     {
         /* root directory can't be searched */
         status = FAILURE;
-        fprintf(stderr, "Root directory can't be searched, failed due to errno: %s\n", strerror(errno));
-        return status;
+        printf("Directory %s: Permission denied.\n", path);
     }
 
     /* initializing the directory queue */
@@ -176,7 +175,6 @@ int main(int argc, char *argv[])
     }
 
     dir_q->first->dir = root;
-    dir_q->first->next = NULL;
 
     /****** create argv[3] threads ******/
 
