@@ -21,12 +21,12 @@ typedef struct DIR_FIFO_Q
     DIR_ENTRY *last;
 } DIR_FIFO_Q;
 
-DIR_FIFO_Q *initialize_directory_queue();
+DIR_FIFO_Q *initialize_directory_queue(int *status);
 int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term);
 DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q);
-int *enqueue(DIR_FIFO_Q *dir_q, DIR *dir);
+int enqueue(DIR_FIFO_Q *dir_q, DIR *dir);
 
-DIR_FIFO_Q *initialize_directory_queue(&status)
+DIR_FIFO_Q *initialize_directory_queue(int *status)
 {
     DIR_FIFO_Q *dir_q = (DIR_FIFO_Q *)malloc(sizeof(DIR_FIFO_Q));
 
@@ -114,7 +114,7 @@ DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q)
     return ret;
 }
 
-int *enqueue(DIR_FIFO_Q *dir_q, DIR *dir)
+int enqueue(DIR_FIFO_Q *dir_q, DIR *dir)
 {
     int status = SUCCESS;
     dir_q->last->next = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
