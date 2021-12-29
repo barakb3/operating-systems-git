@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
@@ -20,28 +21,28 @@ typedef struct DIR_FIFO_Q
     DIR_ENTRY *last;
 } DIR_FIFO_Q;
 
-DIR_FIFO_Q *dir_q initialize_directory_queue();
+DIR_FIFO_Q *initialize_directory_queue();
 int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term);
 DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q);
-DIR_ENTRY *enqueue(DIR_FIFO_Q *dir_q, DIR *dir);
+int *enqueue(DIR_FIFO_Q *dir_q, DIR *dir);
 
-DIR_FIFO_Q *initialize_directory_queue()
+DIR_FIFO_Q *initialize_directory_queue(&status)
 {
     DIR_FIFO_Q *dir_q = (DIR_FIFO_Q *)malloc(sizeof(DIR_FIFO_Q));
 
     if (dir_q == NULL)
     {
-        status = FAILURE;
+        *status = FAILURE;
         fprintf(stderr, "Failed allocating memory for the directory queue due to errno: %s", strerror(errno));
-        return status;
+        return NULL;
     }
 
     dir_q->first = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
     if (dir_q->first == NULL)
     {
-        status = FAILURE;
+        *status = FAILURE;
         fprintf(stderr, "Failed allocating memory for the directory entry due to errno: %s", strerror(errno));
-        return status;
+        return NULL;
     }
     dir_q->first->dir = NULL;
     dir_q->first->next = NULL;
@@ -72,7 +73,7 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
         strcpy(curr_path, path);
         strcat(curr_path, curr_name);
-        if (stat(curr_path, &curr_stat) != 0)
+        if (stat(curr_path, curr_stat) != 0)
         {
             fprintf(stderr, "Failed when tried to check dir status due to errno: %s", strerror(errno));
             return 1;
@@ -108,7 +109,7 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
 
 DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q)
 {
-    DIR_ENTRY *ret = dir_q->first
+    DIR_ENTRY *ret = dir_q->first;
     dir_q->first = dir_q->first->next;
     return ret;
 }
@@ -135,8 +136,13 @@ int main(int argc, char *argv[])
     const char *search_term;
 
     /* initializing the directory queue */
-    DIR_FIFO_Q *dir_q = initialize_directory_queue();
-
+    DIR_FIFO_Q *dir_q = initialize_directory_queue(&status);
+    if (dir_q == NULL)
+    {
+        /* initializing failed */
+        return status;
+    }
+    
     if (argc != 4)
     {
         /* numbar of arguments isn't valid */
