@@ -52,15 +52,15 @@ DIR_FIFO_Q *initialize_directory_queue(int *status)
 
 int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
 {
-    DIR_ENTRY *first = dir_q->first;
+    DIR *dir = dir_q->first->dir;
     struct dirent *curr_entry;
-    struct stat *curr_stat;
+    struct stat curr_statbuf;
     char *curr_name;
     char curr_path[PATH_MAX];
     DIR *new_dir;
 
     errno = 0;
-    while ((curr_entry = readdir(first->dir)) != NULL)
+    while ((curr_entry = readdir(dir)) != NULL)
     {
         curr_name = curr_entry->d_name;
 
@@ -73,7 +73,7 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
         strcpy(curr_path, path);
         strcat(curr_path, curr_name);
-        if (stat(curr_path, curr_stat) != 0)
+        if (stat(curr_path, &curr_statbuf) != 0)
         {
             fprintf(stderr, "Failed when tried to check dir status due to errno: %s", strerror(errno));
             return 1;
