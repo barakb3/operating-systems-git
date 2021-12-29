@@ -107,7 +107,7 @@ int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term)
             {
                 /* directory can be searched */
                 strcat(curr_path, "/");
-                printf("after concatenation: %s\n", curr_path);
+                /*printf("after concatenation: %s\n", curr_path);*/
                 if (enqueue(dir_q, new_dir, curr_path) == FAILURE)
                 {
                     /* enqueuing failed */
