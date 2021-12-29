@@ -79,7 +79,7 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
             return 1;
         }
 
-        if (curr_stat->st_mode & S_IFMT == SIFDIR)
+        if (SIFDIR(curr_stat->st_mode))
         {
             /* dirent is a directory */
             if ((new_dir = opendir(curr_path)) == NULL)
