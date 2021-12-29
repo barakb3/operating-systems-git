@@ -77,7 +77,19 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
         if (stat(curr_path, &curr_statbuf) != 0)
         {
-            printf("the following directory made the problem: %s\n", curr_path);
+            printf("the following directory made the problem: %s\n its permissions are", curr_path);
+            printf("File Permissions: \t");
+            printf((S_ISDIR(curr_statbuf.st_mode)) ? "d" : "-");
+            printf((curr_statbuf.st_mode & S_IRUSR) ? "r" : "-");
+            printf((curr_statbuf.st_mode & S_IWUSR) ? "w" : "-");
+            printf((curr_statbuf.st_mode & S_IXUSR) ? "x" : "-");
+            printf((curr_statbuf.st_mode & S_IRGRP) ? "r" : "-");
+            printf((curr_statbuf.st_mode & S_IWGRP) ? "w" : "-");
+            printf((curr_statbuf.st_mode & S_IXGRP) ? "x" : "-");
+            printf((curr_statbuf.st_mode & S_IROTH) ? "r" : "-");
+            printf((curr_statbuf.st_mode & S_IWOTH) ? "w" : "-");
+            printf((curr_statbuf.st_mode & S_IXOTH) ? "x" : "-");
+            printf("\n\n");
             fprintf(stderr, "Failed when tried to check dir status due to errno: %s\n", strerror(errno));
             return FAILURE;
         }
