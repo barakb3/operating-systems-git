@@ -73,10 +73,11 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
         /* modifying the path of the current dirent */
         strcpy(curr_path, path);
         strcat(curr_path, curr_name);
-        printf("the following directory made the problem: %s\n", curr_path);
+
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
         if (stat(curr_path, &curr_statbuf) != 0)
         {
+            printf("the following directory made the problem: %s\n", curr_path);
             fprintf(stderr, "Failed when tried to check dir status due to errno: %s\n", strerror(errno));
             return FAILURE;
         }
