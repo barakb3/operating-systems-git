@@ -12,6 +12,7 @@
 typedef struct DIR_ENTRY
 {
     DIR *dir;
+    char path[PATH_MAX];
     struct DIR_ENTRY *next;
 } DIR_ENTRY;
 
@@ -22,9 +23,9 @@ typedef struct DIR_FIFO_Q
 } DIR_FIFO_Q;
 
 DIR_FIFO_Q *initialize_directory_queue(int *status);
-int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term);
+int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term);
 DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q);
-int enqueue(DIR_FIFO_Q *dir_q, DIR *dir);
+int enqueue(DIR_FIFO_Q *dir_q, DIR *dir, char *path);
 
 DIR_FIFO_Q *initialize_directory_queue(int *status)
 {
@@ -50,7 +51,7 @@ DIR_FIFO_Q *initialize_directory_queue(int *status)
     return dir_q;
 }
 
-int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
+int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term)
 {
     DIR *dir = dir_q->first->dir;
     struct dirent *curr_entry;
@@ -71,7 +72,7 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
         }
 
         /* modifying the path of the current dirent */
-        strcpy(curr_path, path);
+        strcpy(curr_path, dir_q->first->path);
         strcat(curr_path, curr_name);
 
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
@@ -105,7 +106,7 @@ int iterate_dir(DIR_FIFO_Q *dir_q, char *path, const char *search_term)
             else
             {
                 /* directory can be searched */
-                if (enqueue(dir_q, new_dir) == FAILURE)
+                if (enqueue(dir_q, new_dir, curr_path) == FAILURE)
                 {
                     /* enqueuing failed */
                     return FAILURE;
@@ -137,7 +138,7 @@ DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q)
     return ret;
 }
 
-int enqueue(DIR_FIFO_Q *dir_q, DIR *dir)
+int enqueue(DIR_FIFO_Q *dir_q, DIR *dir, char *path)
 {
     int status = SUCCESS;
     dir_q->last->next = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
@@ -148,6 +149,7 @@ int enqueue(DIR_FIFO_Q *dir_q, DIR *dir)
     }
     dir_q->last = dir_q->last->next;
     dir_q->last->dir = dir;
+    strcpy(dir_q->last->path, path);
     dir_q->last->next = NULL;
     return status;
 }
@@ -187,12 +189,13 @@ int main(int argc, char *argv[])
     }
 
     dir_q->first->dir = root;
+    strcpy(dir_q->first->path, path);
 
     /****** create argv[3] threads ******/
 
     while (dir_q->first != NULL)
     {
-        status = iterate_dir(dir_q, path, search_term);
+        status = iterate_dir(dir_q, search_term);
         if (status == FAILURE)
         {
             /* Failed when tried to read dir content */
