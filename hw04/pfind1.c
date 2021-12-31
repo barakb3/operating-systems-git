@@ -177,7 +177,7 @@ void *thread_func(void *thread_param)
     if (dir_to_handle != NULL)
     {
         my_thread_entry->dir = dir_to_handle->dir;
-        my_thread_entry->path = dir_to_handle->path;
+        strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
     }
 
