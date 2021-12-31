@@ -341,6 +341,8 @@ int main(int argc, char *argv[])
     pthread_t *threads_id;
     THREAD_ENTRY *th;
 
+    printf("before everything\n");
+
     status = SUCCESS;
     if (argc != 4)
     {
@@ -390,6 +392,8 @@ int main(int argc, char *argv[])
         /* initializing failed */
         return status;
     }
+
+    printf("before initializing locks and cv's\n");
 
     /* initializing mutex and condition variable */
     pthread_mutex_init(&thread_initializer, NULL);
@@ -447,6 +451,9 @@ int main(int argc, char *argv[])
     }
 
     done = 1;
+
+    printf("after work is done\n");
+
     th = thread_q->first;
     /* wake up all threads so they can exit cleanly */
     while (th != NULL)
@@ -469,6 +476,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    printf("after all searching threads exited and before destroying lock and cv's\n");
+    
     pthread_cond_destroy(&all_initialized);
     pthread_cond_destroy(&start_work);
     pthread_mutex_destroy(&thread_initializer);
