@@ -428,6 +428,7 @@ int main(int argc, char *argv[])
     DIR *root;
     pthread_t *threads_id;
     THREAD_ENTRY *th;
+    int k;
 
     status = SUCCESS;
     if (argc != 4)
@@ -558,7 +559,9 @@ int main(int argc, char *argv[])
     /* waiting for all threads to finish their work */
     for (int i = 0; i < num_of_threads; i++)
     {
-        if (pthread_join(threads_id[i], NULL) != SUCCESS)
+        k = pthread_join(threads_id[i], NULL);
+        printf(k);
+        if (k != SUCCESS)
         {
             status = FAILURE;
             fprintf(stderr, "Failed joining thread %d due to errno: %s\n", i, strerror(errno));
