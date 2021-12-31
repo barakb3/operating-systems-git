@@ -168,6 +168,7 @@ void *thread_func(void *thread_param)
 
     if (dir_to_handle == NULL)
     {
+        printf("going to enqueue threaddddddddddd\n");
         enqueue_thread(my_thread_entry);
         /*
         if (thread_q->len == threads_initialized)
@@ -314,6 +315,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
     if (next_dir_in_queue == NULL)
     {
+        printf("going to enqueue threaddddddddddd\n");
         my_thread_entry->dir = NULL;
         strcpy(my_thread_entry->path, "\0");
         my_thread_entry->next = NULL;
