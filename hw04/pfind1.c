@@ -170,6 +170,7 @@ void *thread_func(void *thread_param)
     if (dir_to_handle == NULL)
     {
         enqueue_thread(my_thread_entry);
+        printf("second cv address in thread_func is: %lu\n", my_thread_entry->my_condition_variable);
         if (thread_q->len == threads_initialized)
         {
             pthread_cond_signal(&all_sleep);
