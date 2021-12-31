@@ -184,7 +184,7 @@ void *thread_func(void *thread_param)
         my_thread_entry->dir = dir_to_handle->dir;
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
-        // enqueue_thread(my_thread_entry);
+        
         /*
         if (thread_q->len == threads_initialized)
         {
