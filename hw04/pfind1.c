@@ -540,6 +540,9 @@ int main(int argc, char *argv[])
     done = 1;
 
     printf("after work is done\n");
+    
+    /* searching threads work is done */
+    pthread_mutex_unlock(&queues_access);
 
     th = thread_q->first;
     /* wake up all threads so they can exit cleanly */
@@ -550,8 +553,7 @@ int main(int argc, char *argv[])
     }
     printf("after waking all threads to be terminated\n");
 
-    /* searching threads work is done */
-    pthread_mutex_unlock(&queues_access);
+    
 
     printf("queue_access unlocked from main\n");
 
