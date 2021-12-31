@@ -268,7 +268,9 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 {
                     next_thread_in_queue->dir = new_dir;
                     next_thread_in_queue->path = curr_path;
+                    printf("seg?\n");
                     pthread_cond_signal(next_thread_in_queue->my_condition_variable);
+                    printf("no seg\n");
                 }
             }
         }
