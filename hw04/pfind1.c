@@ -102,7 +102,7 @@ THREAD_FIFO_Q *initialize_threads_queue()
         fprintf(stderr, "Failed allocating memory for the threads queue due to errno: %s\n", strerror(errno));
         return NULL;
     }
-
+    /*
     thread_q->first = (THREAD_ENTRY *)malloc(sizeof(THREAD_ENTRY));
     if (thread_q->first == NULL)
     {
@@ -112,6 +112,7 @@ THREAD_FIFO_Q *initialize_threads_queue()
     }
 
     thread_q->last = thread_q->first;
+    */
     thread_q->len = 0;
     return thread_q;
 }
@@ -185,7 +186,7 @@ void *thread_func(void *thread_param)
         my_thread_entry->dir = dir_to_handle->dir;
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
-        
+
         /*
         if (thread_q->len == threads_initialized)
         {
@@ -215,7 +216,7 @@ void *thread_func(void *thread_param)
         }
         printf("thread number %lu woke up\n", pthread_self());
         pthread_mutex_unlock(&queues_access);
-        
+
         scan_dir(my_thread_entry);
     } while (1);
 }
@@ -366,35 +367,55 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
 
 void enqueue_dir(DIR *dir, char *path)
 {
-    dir_q->last->next = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
-    if (dir_q->last->next == NULL)
-    {
-        status = FAILURE;
-        fprintf(stderr, "Failed allocating memory for the directory entry due to errno: %s\n", strerror(errno));
-        threads_failed++;
-        if (threads_failed == num_of_threads)
-        {
-            pthread_cond_signal(&all_sleep);
-        }
-        pthread_exit((void *)FAILURE);
-    }
-    dir_q->last = dir_q->last->next;
-    dir_q->last->dir = dir;
-    strcpy(dir_q->last->path, path);
     if (dir_q->len == 0)
     {
-        dir_q->first = dir_q->last;
+        dir_q->first = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
+        if (dir_q->first == NULL)
+        {
+            status = FAILURE;
+            fprintf(stderr, "Failed allocating memory for the directories entry due to errno: %s\n", strerror(errno));
+            threads_failed++;
+            if (threads_failed == num_of_threads)
+            {
+                pthread_cond_signal(&all_sleep);
+            }
+            pthread_exit((void *)FAILURE);
+        }
+        dir_q->last = dir_q->first;
     }
+    else
+    {
+        dir_q->last->next = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
+        if (dir_q->last->next == NULL)
+        {
+            status = FAILURE;
+            fprintf(stderr, "Failed allocating memory for the directory entry due to errno: %s\n", strerror(errno));
+            threads_failed++;
+            if (threads_failed == num_of_threads)
+            {
+                pthread_cond_signal(&all_sleep);
+            }
+            pthread_exit((void *)FAILURE);
+        }
+        dir_q->last = dir_q->last->next;
+    }
+    dir_q->last->dir = dir;
+    strcpy(dir_q->last->path, path);
+
     dir_q->len++;
 }
 
 void enqueue_thread(THREAD_ENTRY *my_thread_entry)
 {
-    thread_q->last->next = my_thread_entry;
-    thread_q->last = thread_q->last->next;
     if (thread_q->len == 0)
     {
-        thread_q->first = thread_q->last;
+        thread_q->first = my_thread_entry;
+        thread_q->last = thread_q->first;
+    }
+    else
+    {
+        thread_q->last->next = my_thread_entry;
+        thread_q->last = thread_q->last->next;
     }
     thread_q->len++;
 }
