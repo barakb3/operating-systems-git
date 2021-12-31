@@ -267,7 +267,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 if (next_thread_in_queue != NULL)
                 {
                     next_thread_in_queue->dir = new_dir;
-                    printf("curr_path before entering thread_entry is %s\n", curr_path);
                     next_thread_in_queue->path = curr_path;
                     pthread_cond_signal(next_thread_in_queue->my_condition_variable);
                 }
