@@ -300,12 +300,15 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         }
         pthread_exit((void *)FAILURE);
     }
-    /* tread finished scanning some dir and now checks if there are any new dirwctories to work on */
+    /* tread finished scanning some dir and now checks if there are any new directories to work on */
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
 
     if (next_dir_in_queue == NULL)
     {
+        my_thread_entry->dir = NULL;
+        my_thread_entry->path = NULL;
+        my_thread_entry->next = NULL;
         enqueue_thread(my_thread_entry);
         if (thread_q->len == threads_initialized)
         {
@@ -316,17 +319,12 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
     if (next_dir_in_queue != NULL)
     {
-        /* the thread that 'caught' the root need to handle it and only after that enter the queue */
+        /* the thread need to handle the directory (strat scan_dir from the beginning) */
         my_thread_entry->dir = next_dir_in_queue->dir;
         strcpy(my_thread_entry->path, next_dir_in_queue->path);
         scan_dir(my_thread_entry);
-        enqueue_thread(my_thread_entry);
-        if (thread_q->len == threads_initialized)
-        {
-            pthread_cond_signal(&all_sleep);
-        }
     }
-    /* if not enters the queue and goes to sleep */
+    /* otherwise already entered the queue and now goes to sleep */
 }
 
 DIR_ENTRY *dequeue_dir()
