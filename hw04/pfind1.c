@@ -229,7 +229,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     THREAD_ENTRY *next_thread_in_queue;
     DIR_ENTRY *next_dir_in_queue;
 
-    printf("thread number %lu started scanning %s\n", pthread_self(), my_thread_entry->path);
+    // printf("thread number %lu started scanning %s\n", pthread_self(), my_thread_entry->path);
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
     {
@@ -308,7 +308,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         pthread_exit((void *)FAILURE);
     }
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
-    printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
+    // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
 
@@ -358,6 +358,7 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
     THREAD_ENTRY *ret = thread_q->first;
     thread_q->first = thread_q->first->next;
     thread_q->len--;
+    printf("length of thread_q after dequeuing thread is %d", thread_q->len);
     return ret;
 }
 
