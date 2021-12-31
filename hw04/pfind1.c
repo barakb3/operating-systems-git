@@ -184,7 +184,7 @@ void *thread_func(void *thread_param)
         scan_dir(my_thread_entry);
     }
 
-    printf("thread start looping with %d\n", dir_to_handle != NULL ? 1 : 0);
+    printf("thread start looping withhhhhhhhh %d\n", dir_to_handle != NULL ? 1 : 0);
 
     do
     {
