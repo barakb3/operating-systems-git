@@ -28,7 +28,8 @@ typedef struct DIR_FIFO_Q
 typedef struct THREAD_ENTRY
 {
     pthread_cond_t my_condition_variable;
-    DIR_ENTRY *dir_to_handle;
+    DIR *dir;
+    char *path;
     struct THREAD_ENTRY *next;
 } THREAD_ENTRY;
 
@@ -51,7 +52,7 @@ void enqueue_thread(THREAD_ENTRY *my_thread_entry);
 
 static int status;
 static int done = 0;
-atomic_int num_of_threads;
+static int num_of_threads;
 atomic_int threads_initialized = 0;
 atomic_int threads_failed = 0;
 atomic_int num_of_files_found = 0;
@@ -123,10 +124,12 @@ pthread_t *initialize_threads_id_arr()
         fprintf(stderr, "Failed allocating memory for the threads_id array due to errno: %s\n", strerror(errno));
         return NULL;
     }
+    return threads_id;
 }
+
 void *thread_func(void *thread_param)
 {
-    DIR *dir_to_handle;
+    DIR_ENTRY *dir_to_handle;
     pthread_cond_t my_condition_variable;
     THREAD_ENTRY *my_thread_entry = (THREAD_ENTRY *)malloc(sizeof(THREAD_ENTRY));
     if (my_thread_entry == NULL)
@@ -163,7 +166,7 @@ void *thread_func(void *thread_param)
     dir_to_handle = dequeue_dir(dir_q);
     if (dir_to_handle = NULL)
     {
-        enqueue(my_thread_entry);
+        enqueue_thread(my_thread_entry);
         if (thread_q->len == threads_initialized)
         {
             pthread_cond_signal(&all_sleep);
@@ -172,7 +175,8 @@ void *thread_func(void *thread_param)
     pthread_mutex_unlock(&queues_access);
     if (dir_to_handle != NULL)
     {
-        my_thread_entry->dir_to_handle = dir_to_handle;
+        my_thread_entry->dir = dir_to_handle->dir;
+        my_thread_entry->path = dir_to_handle->path;
         scan_dir(my_thread_entry);
     }
 
@@ -206,7 +210,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     THREAD_ENTRY *next_thread_in_queue;
 
     errno = 0;
-    while ((curr_entry = readdir(my_thread_entry->dir_to_handle->dir)) != NULL)
+    while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
     {
         curr_name = curr_entry->d_name;
 
@@ -217,7 +221,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         }
 
         /* modifying the path of the current dirent */
-        strcpy(curr_path, my_thread_entry->dir_to_handle->path);
+        strcpy(curr_path, my_thread_entry->path);
         strcat(curr_path, curr_name);
 
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
@@ -254,7 +258,8 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 pthread_mutex_unlock(&queues_access);
                 if (next_thread_in_queue != NULL)
                 {
-                    next_thread_in_queue->dir_to_handle = new_dir;
+                    next_thread_in_queue->dir = new_dir;
+                    next_thread_in_queue->path = curr_path;
                     pthread_cond_signal(&next_thread_in_queue->my_condition_variable);
                 }
             }
