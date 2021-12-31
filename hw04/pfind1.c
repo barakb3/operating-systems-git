@@ -163,7 +163,7 @@ void *thread_func(void *thread_param)
     pthread_mutex_unlock(&thread_initializer);
 
     pthread_mutex_lock(&queues_access);
-    printf("before dequeue\n")
+    printf("before dequeue\n");
     dir_to_handle = dequeue_dir(dir_q);
 
     if (dir_to_handle == NULL)
