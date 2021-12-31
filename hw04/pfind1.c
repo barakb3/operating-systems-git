@@ -255,26 +255,18 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
             else
             {
                 /* directory can be searched */
-                printf("it's directory\n");
                 strcat(curr_path, "/");
                 pthread_mutex_lock(&queues_access);
-                printf("before dequeue thread\n");
                 next_thread_in_queue = dequeue_thread(thread_q);
-                printf("after dequeue thread\n");
                 if (next_thread_in_queue == NULL)
                 {
-                    printf("before enqueue dir\n");
                     enqueue_dir(new_dir, curr_path);
-                    printf("after enqueue dir\n");
                 }
                 pthread_mutex_unlock(&queues_access);
                 if (next_thread_in_queue != NULL)
                 {
-                    printf("next_thread_in_queue isn't NULL\n");
                     next_thread_in_queue->dir = new_dir;
-                    printf("accessed next->dir\n");
                     strcpy(next_thread_in_queue->path, curr_path);
-                    printf("path entered: %s\n", next_thread_in_queue->path);
                     pthread_cond_signal(next_thread_in_queue->my_condition_variable);
                 }
             }
