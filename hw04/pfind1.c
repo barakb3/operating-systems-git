@@ -215,6 +215,8 @@ void *thread_func(void *thread_param)
         {
             printf("thread number %lu exited\n", pthread_self());
             pthread_mutex_unlock(&queues_access);
+            /* destroy thread's condition variable */
+            pthread_cond_destroy(&my_condition_variable);
             pthread_exit((void *)SUCCESS);
         }
         // printf("thread number %lu woke up\n", pthread_self());
@@ -428,7 +430,6 @@ int main(int argc, char *argv[])
     DIR *root;
     pthread_t *threads_id;
     THREAD_ENTRY *th;
-    int k;
 
     status = SUCCESS;
     if (argc != 4)
@@ -559,9 +560,7 @@ int main(int argc, char *argv[])
     /* waiting for all threads to finish their work */
     for (int i = 0; i < num_of_threads; i++)
     {
-        k = pthread_join(threads_id[i], NULL);
-        printf("%d\n", k);
-        if (k != SUCCESS)
+        if (pthread_join(threads_id[i], NULL) != SUCCESS)
         {
             status = FAILURE;
             fprintf(stderr, "Failed joining thread %d due to errno: %s\n", i, strerror(errno));
@@ -576,13 +575,6 @@ int main(int argc, char *argv[])
     pthread_mutex_destroy(&thread_initializer);
 
     pthread_cond_destroy(&all_sleep);
-    th = thread_q->first;
-    /* destroy all threads' condition variables */
-    while (th != NULL)
-    {
-        pthread_cond_destroy(th->my_condition_variable);
-        th = th->next;
-    }
     pthread_mutex_destroy(&queues_access);
 
     printf("Done searching, found %d files\n", num_of_files_found);
