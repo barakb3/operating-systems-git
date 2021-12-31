@@ -560,7 +560,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < num_of_threads; i++)
     {
         k = pthread_join(threads_id[i], NULL);
-        printf(k);
+        printf("%d\n", k);
         if (k != SUCCESS)
         {
             status = FAILURE;
