@@ -184,6 +184,7 @@ void *thread_func(void *thread_param)
     if (dir_to_handle != NULL)
     {
         /* the thread that 'caught' the root need to handle it and only after that enter the queue */
+        printf("here\n");
         my_thread_entry->dir = dir_to_handle->dir;
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
