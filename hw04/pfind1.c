@@ -341,8 +341,6 @@ int main(int argc, char *argv[])
     pthread_t *threads_id;
     THREAD_ENTRY *th;
 
-    printf("before everything\n");
-
     status = SUCCESS;
     if (argc != 4)
     {
@@ -403,6 +401,8 @@ int main(int argc, char *argv[])
     pthread_mutex_init(&queues_access, NULL);
     pthread_cond_init(&all_sleep, NULL);
 
+    printf("before creating threads");
+
     /* creating num_of_threads - 1 (=argv[3] - 1) threads */
     for (int i = 0; i < num_of_threads - 1; i++)
     {
@@ -416,6 +416,8 @@ int main(int argc, char *argv[])
 
     /* lock in main before all_initialized condition is met */
     pthread_mutex_lock(&thread_initializer);
+    
+    printf("before creating last thread\n");
 
     /* now it can create the last thread that will meet the condition all_initialized */
     if (pthread_create(&threads_id[num_of_threads], NULL, thread_func, NULL) != 0)
@@ -477,7 +479,7 @@ int main(int argc, char *argv[])
     }
 
     printf("after all searching threads exited and before destroying lock and cv's\n");
-    
+
     pthread_cond_destroy(&all_initialized);
     pthread_cond_destroy(&start_work);
     pthread_mutex_destroy(&thread_initializer);
