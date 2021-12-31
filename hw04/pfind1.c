@@ -503,7 +503,7 @@ int main(int argc, char *argv[])
     pthread_mutex_lock(&thread_initializer);
 
     /* now it can create the last thread that will meet the condition all_initialized */
-    if (pthread_create(&threads_id[num_of_threads], NULL, thread_func, NULL) != 0)
+    if (pthread_create(&threads_id[num_of_threads-1], NULL, thread_func, NULL) != 0)
     {
         status = FAILURE;
         fprintf(stderr, "Failed creating thread number %d due to errno: %s\n", num_of_threads, strerror(errno));
