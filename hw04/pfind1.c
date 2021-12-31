@@ -213,7 +213,8 @@ void *thread_func(void *thread_param)
 
         if (done == 1)
         {
-            printf("thread number %lu exited", pthread_self());
+            printf("thread number %lu exited\n", pthread_self());
+            pthread_mutex_unlock(&queues_access);
             pthread_exit((void *)SUCCESS);
         }
         // printf("thread number %lu woke up\n", pthread_self());
@@ -540,7 +541,7 @@ int main(int argc, char *argv[])
     done = 1;
 
     printf("after work is done\n");
-    
+
     /* searching threads work is done */
     pthread_mutex_unlock(&queues_access);
 
