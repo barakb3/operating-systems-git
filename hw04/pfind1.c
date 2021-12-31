@@ -215,6 +215,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     char curr_path[PATH_MAX];
     DIR *new_dir;
     THREAD_ENTRY *next_thread_in_queue;
+    pthread_cond_t cv;
 
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
@@ -267,7 +268,8 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 {
                     next_thread_in_queue->dir = new_dir;
                     next_thread_in_queue->path = curr_path;
-                    pthread_cond_signal(&(next_thread_in_queue->my_condition_variable));
+                    cv = next_thread_in_queue->my_condition_variable;
+                    pthread_cond_signal(&cv);
                 }
             }
         }
