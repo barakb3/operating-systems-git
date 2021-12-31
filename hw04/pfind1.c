@@ -198,9 +198,10 @@ void *thread_func(void *thread_param)
             pthread_cond_signal(&all_sleep);
         }
 
-        printf("thread is going to wait\n");
-
         pthread_cond_wait(&my_condition_variable, &queues_access);
+
+        printf("thread woke up\n");
+
         pthread_mutex_unlock(&queues_access);
 
         scan_dir(my_thread_entry);
@@ -215,7 +216,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     char curr_path[PATH_MAX];
     DIR *new_dir;
     THREAD_ENTRY *next_thread_in_queue;
-    pthread_cond_t cv;
 
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
