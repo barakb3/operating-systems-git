@@ -198,7 +198,7 @@ void *thread_func(void *thread_param)
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
-        printf("thread woke up\n");
+        printf("thread woke up with path: %s\n", my_thread_entry->path);
 
         pthread_mutex_unlock(&queues_access);
 
@@ -232,7 +232,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         strcat(curr_path, curr_name);
 
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
-        printf("curr path to check with stat is: %s\n", curr_path);
         if (stat(curr_path, &curr_statbuf) != 0)
         {
             status = FAILURE;
