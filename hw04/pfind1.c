@@ -200,6 +200,7 @@ void *thread_func(void *thread_param)
 
         if (thread_q->len == threads_initialized)
         {
+            printf("all sleepppppppppppppppp"\n);
             pthread_cond_signal(&all_sleep);
         }
         printf("thread number %lu goes to sleep\n", pthread_self());
