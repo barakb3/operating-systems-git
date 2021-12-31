@@ -218,7 +218,8 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
-    {
+    {   
+        printd("enterd while\n");
         curr_name = curr_entry->d_name;
 
         if (strcmp(curr_name, ".") == 0 || strcmp(curr_name, "..") == 0)
