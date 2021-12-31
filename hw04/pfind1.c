@@ -283,6 +283,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 printf("%s\n", curr_path);
             }
         }
+        printf("end while\n");
     }
     if (errno != 0)
     {
