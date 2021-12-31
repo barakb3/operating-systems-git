@@ -435,13 +435,19 @@ int main(int argc, char *argv[])
 
     /* lock queues before all searching threads to ensure reaching all_sleep condition */
     pthread_mutex_lock(&queues_access);
+    
+    printf("main locked queue_access\n");
 
     /* wake up all threads */
     pthread_cond_broadcast(&start_work);
 
+    printf("main sent start_wotk\n");
+
     /* waiting for all threads to finish their work */
     pthread_cond_wait(&all_sleep, &queues_access);
 
+    printf("all threads went to sleep\n");
+    
     if (threads_failed == num_of_threads)
     {
         return status;
