@@ -361,7 +361,7 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
     THREAD_ENTRY *ret = thread_q->first;
     thread_q->first = thread_q->first->next;
     thread_q->len--;
-    printf("length of thread_q after dequeuing thread is %d\n", thread_q->len);
+    // printf("length of thread_q after dequeuing thread is %d\n", thread_q->len);
     return ret;
 }
 
