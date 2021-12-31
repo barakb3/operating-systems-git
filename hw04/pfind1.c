@@ -344,7 +344,7 @@ DIR_ENTRY *dequeue_dir()
     }
     DIR_ENTRY *ret = dir_q->first;
     dir_q->first = dir_q->first->next;
-    dir_q->len++;
+    dir_q->len--;
     return ret;
 }
 
