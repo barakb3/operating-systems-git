@@ -219,7 +219,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
     {   
-        printf("enterd while\n");
         curr_name = curr_entry->d_name;
 
         if (strcmp(curr_name, ".") == 0 || strcmp(curr_name, "..") == 0)
@@ -259,10 +258,14 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 printf("it's directory\n");
                 strcat(curr_path, "/");
                 pthread_mutex_lock(&queues_access);
+                printf("before dequeue thread\n");
                 next_thread_in_queue = dequeue_thread(thread_q);
+                printf("after dequeue thread\n");
                 if (next_thread_in_queue == NULL)
                 {
+                    printf("before enqueue dir\n");
                     enqueue_dir(new_dir, curr_path);
+                    printf("after enqueue dir\n");
                 }
                 pthread_mutex_unlock(&queues_access);
                 if (next_thread_in_queue != NULL)
@@ -277,7 +280,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         else
         {
             /* dirent isn't a directory */
-            printf("it's a file\n");
             if (strstr(curr_name, search_term))
             {
                 /* the file name contains the search term */
