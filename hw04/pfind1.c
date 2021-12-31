@@ -51,6 +51,7 @@ void enqueue_dir(DIR *dir, char *path);
 void enqueue_thread(THREAD_ENTRY *my_thread_entry);
 
 static int status;
+static int root_dequeued = 0;
 static int done = 0;
 static int num_of_threads;
 atomic_int threads_initialized = 0;
@@ -129,7 +130,7 @@ pthread_t *initialize_threads_id_arr()
 
 void *thread_func(void *thread_param)
 {
-    DIR_ENTRY *dir_to_handle;
+    DIR_ENTRY *root;
     pthread_cond_t my_condition_variable;
     THREAD_ENTRY *my_thread_entry = (THREAD_ENTRY *)malloc(sizeof(THREAD_ENTRY));
     if (my_thread_entry == NULL)
@@ -163,9 +164,15 @@ void *thread_func(void *thread_param)
     pthread_mutex_unlock(&thread_initializer);
 
     pthread_mutex_lock(&queues_access);
-    dir_to_handle = dequeue_dir(dir_q);
-
-    if (dir_to_handle == NULL)
+    if (root_dequeued == 0)
+    {
+        root = dequeue_dir(dir_q);
+        my_thread_entry->dir = root->dir;
+        my_thread_entry->path = root->path;
+        root_dequeued = 1;
+        scan_dir(my_thread_entry);
+    }
+    else
     {
         enqueue_thread(my_thread_entry);
         if (thread_q->len == threads_initialized)
@@ -174,12 +181,6 @@ void *thread_func(void *thread_param)
         }
     }
     pthread_mutex_unlock(&queues_access);
-    if (dir_to_handle != NULL)
-    {
-        my_thread_entry->dir = dir_to_handle->dir;
-        my_thread_entry->path = dir_to_handle->path;
-        scan_dir(my_thread_entry);
-    }
 
     printf("thread start looping\n");
 
@@ -214,7 +215,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     char curr_path[PATH_MAX];
     DIR *new_dir;
     THREAD_ENTRY *next_thread_in_queue;
-    pthread_cond_t *cv;
 
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
