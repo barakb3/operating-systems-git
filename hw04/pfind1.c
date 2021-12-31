@@ -195,6 +195,7 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_sleep);
         }
+        printf("thread goes to sleep\n");
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
