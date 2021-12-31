@@ -184,7 +184,6 @@ void *thread_func(void *thread_param)
     if (dir_to_handle != NULL)
     {
         /* the thread that 'caught' the root need to handle it and only after that enter the queue */
-        printf("here\n");
         my_thread_entry->dir = dir_to_handle->dir;
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
@@ -197,7 +196,7 @@ void *thread_func(void *thread_param)
         */
     }
 
-    printf("thread number %lu start looping with %d\n", pthread_self(), dir_to_handle != NULL ? 1 : 0);
+    printf("cv number %lu start looping with %d\n", &my_condition_variable, dir_to_handle != NULL ? 1 : 0);
 
     do
     {
@@ -237,7 +236,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     THREAD_ENTRY *next_thread_in_queue;
     DIR_ENTRY *next_dir_in_queue;
 
-    printf("thread number %lu started scanning %s\n", pthread_self(), my_thread_entry->path);
+    //printf("thread number %lu started scanning %s\n", pthread_self(), my_thread_entry->path);
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
     {
@@ -367,6 +366,7 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
     THREAD_ENTRY *ret = thread_q->first;
     thread_q->first = thread_q->first->next;
     thread_q->len--;
+    printf("cv num %lu dequeued the queue\n", ret->my_condition_variable);
     // printf("length of thread_q after dequeuing thread is %d\n", thread_q->len);
     return ret;
 }
@@ -413,6 +413,7 @@ void enqueue_dir(DIR *dir, char *path)
 
 void enqueue_thread(THREAD_ENTRY *my_thread_entry)
 {
+    printf("cv num %lu entered the queue\n", my_thread_entry->my_condition_variable);
     if (thread_q->len == 0)
     {
         thread_q->first = my_thread_entry;
