@@ -199,8 +199,6 @@ void *thread_func(void *thread_param)
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
-        printf("thread woke up with path: %s\n", my_thread_entry->path);
-
         pthread_mutex_unlock(&queues_access);
 
         scan_dir(my_thread_entry);
