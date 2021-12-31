@@ -167,10 +167,7 @@ void *thread_func(void *thread_param)
     if (root_dequeued == 0)
     {
         root = dequeue_dir(dir_q);
-        my_thread_entry->dir = root->dir;
-        my_thread_entry->path = root->path;
         root_dequeued = 1;
-        scan_dir(my_thread_entry);
     }
     else
     {
@@ -181,6 +178,13 @@ void *thread_func(void *thread_param)
         }
     }
     pthread_mutex_unlock(&queues_access);
+    
+    if (root != NULL)
+    {
+        my_thread_entry->dir = root->dir;
+        my_thread_entry->path = root->path;
+        scan_dir(my_thread_entry);
+    }
 
     printf("thread start looping\n");
 
