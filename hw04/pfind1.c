@@ -228,7 +228,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     THREAD_ENTRY *next_thread_in_queue;
     DIR_ENTRY *next_dir_in_queue;
 
-    printf("thread number %lu started scanning %s", pthread_self(), my_thread_entry->path);
+    printf("thread number %lu started scanning %s\n", pthread_self(), my_thread_entry->path);
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
     {
