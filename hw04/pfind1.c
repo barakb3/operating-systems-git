@@ -162,6 +162,7 @@ void *thread_func(void *thread_param)
     /* finally release the mutex in order to let other threads wake up */
     pthread_mutex_unlock(&thread_initializer);
 
+    printf("thread_initializer unlockes in thread\n");
     pthread_mutex_lock(&queues_access);
     dir_to_handle = dequeue_dir(dir_q);
     if (dir_to_handle == NULL)
@@ -423,7 +424,6 @@ int main(int argc, char *argv[])
 
     pthread_cond_wait(&all_initialized, &thread_initializer);
     /* unlocked thread_initializer so last thread created can lock it and signal all_initialized */
-    printf("after all threads initialized\n");
 
     if (threads_failed == num_of_threads)
     {
@@ -435,8 +435,6 @@ int main(int argc, char *argv[])
 
     /* lock queues before all searching threads to ensure reaching all_sleep condition */
     pthread_mutex_lock(&queues_access);
-    
-    printf("main locked queue_access\n");
 
     /* wake up all threads */
     pthread_cond_broadcast(&start_work);
@@ -447,7 +445,7 @@ int main(int argc, char *argv[])
     pthread_cond_wait(&all_sleep, &queues_access);
 
     printf("all threads went to sleep\n");
-    
+
     if (threads_failed == num_of_threads)
     {
         return status;
