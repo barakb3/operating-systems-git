@@ -552,10 +552,7 @@ int main(int argc, char *argv[])
         pthread_cond_signal(th->my_condition_variable);
         th = th->next;
     }
-    printf("after waking all threads to be terminated\n");
-
     
-
     printf("queue_access unlocked from main\n");
 
     /* waiting for all threads to finish their work */
