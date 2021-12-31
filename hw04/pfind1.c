@@ -548,7 +548,7 @@ int main(int argc, char *argv[])
 
     done = 1;
 
-    printf("after work is done\n");
+    //printf("after work is done\n");
 
     /* searching threads work is done */
     pthread_mutex_unlock(&queues_access);
@@ -561,7 +561,7 @@ int main(int argc, char *argv[])
         th = th->next;
     }
     
-    printf("queue_access unlocked from main\n");
+    // printf("queue_access unlocked from main\n");
 
     /* waiting for all threads to finish their work */
     for (int i = 0; i < num_of_threads; i++)
