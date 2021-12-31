@@ -169,7 +169,7 @@ void *thread_func(void *thread_param)
 
     if (dir_to_handle == NULL)
     {
-        printf("going to enqueue threaddddddddddd\n");
+        // printf("going to enqueue threaddddddddddd\n");
         enqueue_thread(my_thread_entry);
         /*
         if (thread_q->len == threads_initialized)
@@ -206,7 +206,7 @@ void *thread_func(void *thread_param)
             printf("all sleeppppppppppppppp\n");
             pthread_cond_signal(&all_sleep);
         }
-        printf("thread number %lu goes to sleep\n", pthread_self());
+        // printf("thread number %lu goes to sleep\n", pthread_self());
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
@@ -214,7 +214,7 @@ void *thread_func(void *thread_param)
         {
             pthread_exit((void *)SUCCESS);
         }
-        printf("thread number %lu woke up\n", pthread_self());
+        // printf("thread number %lu woke up\n", pthread_self());
         pthread_mutex_unlock(&queues_access);
 
         scan_dir(my_thread_entry);
@@ -316,7 +316,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
     if (next_dir_in_queue == NULL)
     {
-        printf("going to enqueue threaddddddddddd\n");
+        // printf("going to enqueue threaddddddddddd\n");
         my_thread_entry->dir = NULL;
         strcpy(my_thread_entry->path, "\0");
         my_thread_entry->next = NULL;
