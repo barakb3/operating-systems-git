@@ -270,6 +270,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 pthread_mutex_unlock(&queues_access);
                 if (next_thread_in_queue != NULL)
                 {
+                    printf("next_thread_in_queue isn't NULL\n");
                     next_thread_in_queue->dir = new_dir;
                     strcpy(next_thread_in_queue->path, curr_path);
                     printf("path entered: %s\n", next_thread_in_queue->path);
