@@ -112,6 +112,7 @@ THREAD_FIFO_Q *initialize_threads_queue()
     }
 
     thread_q->last = thread_q->first;
+    thread_q->len = 0;
     return thread_q;
 }
 
