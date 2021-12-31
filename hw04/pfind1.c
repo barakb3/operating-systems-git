@@ -153,7 +153,7 @@ void *thread_func(void *thread_param)
     pthread_mutex_lock(&thread_initializer);
     /* increment the number of threads started by one */
     threads_initialized++;
-    
+
     if (threads_initialized + threads_failed == num_of_threads)
     {
         /* last thread creation */
@@ -547,7 +547,7 @@ int main(int argc, char *argv[])
         pthread_cond_signal(th->my_condition_variable);
         th = th->next;
     }
-
+    printf("after waking all threads to be terminated\n");
     /* searching threads work is done */
     pthread_mutex_unlock(&queues_access);
 
