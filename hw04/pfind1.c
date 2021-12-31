@@ -168,10 +168,12 @@ void *thread_func(void *thread_param)
     if (dir_to_handle == NULL)
     {
         enqueue_thread(my_thread_entry);
+        /*
         if (thread_q->len == threads_initialized)
         {
             pthread_cond_signal(&all_sleep);
         }
+        */
     }
     pthread_mutex_unlock(&queues_access);
 
@@ -182,10 +184,12 @@ void *thread_func(void *thread_param)
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
         enqueue_thread(my_thread_entry);
+        /*
         if (thread_q->len == threads_initialized)
         {
             pthread_cond_signal(&all_sleep);
         }
+        */
     }
 
     printf("thread number %lu start looping with %d\n", pthread_self(), dir_to_handle != NULL ? 1 : 0);
@@ -300,7 +304,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         }
         pthread_exit((void *)FAILURE);
     }
-    /* tread finished scanning some dir and now checks if there are any new directories to work on */
+    /* thread finished scanning some dir and now checks if there are any new directories to work on */
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
 
@@ -310,10 +314,12 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         strcpy(my_thread_entry->path, "\0");
         my_thread_entry->next = NULL;
         enqueue_thread(my_thread_entry);
+        /*
         if (thread_q->len == threads_initialized)
         {
             pthread_cond_signal(&all_sleep);
         }
+        */
     }
     pthread_mutex_unlock(&queues_access);
 
