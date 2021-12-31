@@ -206,7 +206,7 @@ void *thread_func(void *thread_param)
         printf("thread number %lu goes to sleep\n", pthread_self());
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
-        
+
         if (done == 1)
         {
             pthread_exit((void *)SUCCESS);
@@ -306,6 +306,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         pthread_exit((void *)FAILURE);
     }
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
+    printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
 
