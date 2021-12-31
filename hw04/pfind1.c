@@ -254,7 +254,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
             else
             {
                 /* directory can be searched */
-                strcat(curr_path, "////");
+                strcat(curr_path, "/abc");
                 pthread_mutex_lock(&queues_access);
                 next_thread_in_queue = dequeue_thread(thread_q);
                 if (next_thread_in_queue == NULL)
