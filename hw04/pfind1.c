@@ -260,6 +260,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 strcat(curr_path, "/");
                 pthread_mutex_lock(&queues_access);
                 next_thread_in_queue = dequeue_thread(thread_q);
+                printf("first cv address in scan is: %lu\n", next_thread_in_queue->my_condition_variable);
                 if (next_thread_in_queue == NULL)
                 {
                     enqueue_dir(new_dir, curr_path);
