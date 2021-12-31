@@ -204,7 +204,7 @@ void *thread_func(void *thread_param)
 
         if (thread_q->len == threads_initialized)
         {
-            printf("all sleeppppppppppppppp\n");
+            // printf("all sleeppppppppppppppp\n");
             pthread_cond_signal(&all_sleep);
         }
         // printf("thread number %lu goes to sleep\n", pthread_self());
@@ -315,7 +315,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         pthread_exit((void *)FAILURE);
     }
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
-    printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
+    // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
 
@@ -528,12 +528,18 @@ int main(int argc, char *argv[])
     /* wake up all threads */
     pthread_cond_broadcast(&start_work);
 
-    printf("main sent start_wotk\n");
-
     /* waiting for all threads to finish their work */
     pthread_cond_wait(&all_sleep, &queues_access);
-
     printf("all threads went to sleep\n");
+    if (dir_q->first == NULL)
+    {
+        printf("dir_q i empty\n");
+    }
+    else
+    {
+        printf("dir_q isn't empty\n");
+    }
+    
 
     if (threads_failed == num_of_threads)
     {
@@ -567,8 +573,6 @@ int main(int argc, char *argv[])
             return status;
         }
     }
-
-    printf("after all searching threads exited and before destroying lock and cv's\n");
 
     pthread_cond_destroy(&all_initialized);
     pthread_cond_destroy(&start_work);
