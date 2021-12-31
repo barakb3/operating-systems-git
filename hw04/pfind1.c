@@ -146,7 +146,7 @@ void *thread_func(void *thread_param)
 
     pthread_cond_init(&my_condition_variable, NULL);
     my_thread_entry->my_condition_variable = &my_condition_variable;
-    printf("first cv address in thread_func is: %lu\n", my_thread_entry->my_condition_variable);
+
     /* increment the number of threads started by one */
     threads_initialized++;
     /* put thread to sleep */
@@ -170,7 +170,7 @@ void *thread_func(void *thread_param)
     if (dir_to_handle == NULL)
     {
         enqueue_thread(my_thread_entry);
-        printf("second cv address in thread_func is: %lu\n", my_thread_entry->my_condition_variable);
+        printf("after enqueue cv address in thread_func is: %lu\n", my_thread_entry->my_condition_variable);
         if (thread_q->len == threads_initialized)
         {
             pthread_cond_signal(&all_sleep);
@@ -198,7 +198,7 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_sleep);
         }
-        printf("cv address in thread_func is: %lu\n", &my_condition_variable);
+
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
         printf("thread woke up\n");
@@ -357,6 +357,7 @@ void enqueue_thread(THREAD_ENTRY *my_thread_entry)
         thread_q->first = dir_q->last;
     }
     thread_q->len++;
+    printf("cv address in enqueue is: %lu\n", my_thread_entry->my_condition_variable);
 }
 
 int main(int argc, char *argv[])
