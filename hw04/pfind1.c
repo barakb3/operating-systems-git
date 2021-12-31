@@ -162,7 +162,6 @@ void *thread_func(void *thread_param)
     /* finally release the mutex in order to let other threads wake up */
     pthread_mutex_unlock(&thread_initializer);
 
-    printf("thread_initializer unlockes in thread\n");
     pthread_mutex_lock(&queues_access);
     dir_to_handle = dequeue_dir(dir_q);
     if (dir_to_handle == NULL)
@@ -180,6 +179,8 @@ void *thread_func(void *thread_param)
         my_thread_entry->path = dir_to_handle->path;
         scan_dir(my_thread_entry);
     }
+
+    printf("thread start looping\n");
 
     do
     {
