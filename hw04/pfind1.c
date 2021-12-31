@@ -164,6 +164,9 @@ void *thread_func(void *thread_param)
 
     pthread_mutex_lock(&queues_access);
     dir_to_handle = dequeue_dir(dir_q);
+
+    printf("thread dequeued from dir_q\n");
+
     if (dir_to_handle == NULL)
     {
         enqueue_thread(my_thread_entry);
