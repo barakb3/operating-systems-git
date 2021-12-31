@@ -165,8 +165,6 @@ void *thread_func(void *thread_param)
     pthread_mutex_lock(&queues_access);
     dir_to_handle = dequeue_dir(dir_q);
 
-    printf("thread dequeued from dir_q\n");
-
     if (dir_to_handle == NULL)
     {
         enqueue_thread(my_thread_entry);
@@ -234,6 +232,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         strcat(curr_path, curr_name);
 
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
+        printf("curr path to check with stat is: %s", curr_path);
         if (stat(curr_path, &curr_statbuf) != 0)
         {
             status = FAILURE;
