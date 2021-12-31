@@ -354,6 +354,10 @@ void enqueue_thread(THREAD_ENTRY *my_thread_entry)
 {
     thread_q->last->next = my_thread_entry;
     thread_q->last = thread_q->last->next;
+    if (thread_q->len == 0)
+    {
+        thread_q->first = dir_q->last;
+    }
     thread_q->len++;
 }
 
