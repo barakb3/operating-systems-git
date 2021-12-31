@@ -197,10 +197,6 @@ void *thread_func(void *thread_param)
     do
     {
         pthread_mutex_lock(&queues_access);
-        if (done == 1)
-        {
-            pthread_exit((void *)SUCCESS);
-        }
 
         if (thread_q->len == threads_initialized)
         {
@@ -210,6 +206,11 @@ void *thread_func(void *thread_param)
         printf("thread number %lu goes to sleep\n", pthread_self());
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
+        
+        if (done == 1)
+        {
+            pthread_exit((void *)SUCCESS);
+        }
 
         pthread_mutex_unlock(&queues_access);
 
