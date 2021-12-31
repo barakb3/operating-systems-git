@@ -131,8 +131,6 @@ void *thread_func(void *thread_param)
 {
     DIR_ENTRY *dir_to_handle;
     pthread_cond_t my_condition_variable;
-    THREAD_ENTRY my_thread_entry;
-    /*
     THREAD_ENTRY *my_thread_entry = (THREAD_ENTRY *)malloc(sizeof(THREAD_ENTRY));
     if (my_thread_entry == NULL)
     {
@@ -145,9 +143,9 @@ void *thread_func(void *thread_param)
         }
         pthread_exit((void *)FAILURE);
     }
-    */
+
     pthread_cond_init(&my_condition_variable, NULL);
-    my_thread_entry.my_condition_variable = &my_condition_variable;
+    my_thread_entry->my_condition_variable = &my_condition_variable;
 
     /* increment the number of threads started by one */
     threads_initialized++;
@@ -171,7 +169,7 @@ void *thread_func(void *thread_param)
 
     if (dir_to_handle == NULL)
     {
-        enqueue_thread(&my_thread_entry);
+        enqueue_thread(my_thread_entry);
         if (thread_q->len == threads_initialized)
         {
             pthread_cond_signal(&all_sleep);
@@ -180,9 +178,9 @@ void *thread_func(void *thread_param)
     pthread_mutex_unlock(&queues_access);
     if (dir_to_handle != NULL)
     {
-        my_thread_entry.dir = dir_to_handle->dir;
-        my_thread_entry.path = dir_to_handle->path;
-        scan_dir(&my_thread_entry);
+        my_thread_entry->dir = dir_to_handle->dir;
+        my_thread_entry->path = dir_to_handle->path;
+        scan_dir(my_thread_entry);
     }
 
     printf("thread start looping\n");
@@ -199,14 +197,14 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_sleep);
         }
-
+        printf("cv address in thread_func is: %lu", &my_condition_variable);
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
         printf("thread woke up\n");
 
         pthread_mutex_unlock(&queues_access);
 
-        scan_dir(&my_thread_entry);
+        scan_dir(my_thread_entry);
     } while (1);
 }
 
@@ -272,7 +270,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                     next_thread_in_queue->dir = new_dir;
                     next_thread_in_queue->path = curr_path;
                     cv = next_thread_in_queue->my_condition_variable;
-                    // printf("cv address is: %lu", cv);
+                    printf("cv address in scan is: %lu", cv);
                     printf("seg?\n");
                     pthread_cond_signal(cv);
                     printf("no seg\n");
