@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <limits.h>
+#include <pthread.h>
+#include <stdatomic.h>
 
 #define SUCCESS 0
 #define FAILURE 1
@@ -20,48 +22,191 @@ typedef struct DIR_FIFO_Q
 {
     DIR_ENTRY *first;
     DIR_ENTRY *last;
+    int len;
 } DIR_FIFO_Q;
 
-DIR_FIFO_Q *initialize_directory_queue(int *status);
-int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term);
-DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q);
-int enqueue(DIR_FIFO_Q *dir_q, DIR *dir, char *path);
+typedef struct THREAD_ENTRY
+{
+    pthread_cond_t my_condition_variable;
+    DIR_ENTRY *dir_to_handle;
+    struct THREAD_ENTRY *next;
+} THREAD_ENTRY;
 
-DIR_FIFO_Q *initialize_directory_queue(int *status)
+typedef struct THREAD_FIFO_Q
+{
+    THREAD_ENTRY *first;
+    THREAD_ENTRY *last;
+    int len;
+} THREAD_FIFO_Q;
+
+DIR_FIFO_Q *initialize_directories_queue();
+THREAD_FIFO_Q *initialize_threads_queue();
+pthread_t *initialize_threads_id_arr();
+void *thread_func(void *thread_param);
+void scan_dir(THREAD_ENTRY *my_thread_entry);
+DIR_ENTRY *dequeue_dir();
+THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q);
+void enqueue_dir(DIR *dir, char *path);
+void enqueue_thread(THREAD_ENTRY *my_thread_entry);
+
+static int status;
+static int done = 0;
+atomic_int num_of_threads;
+atomic_int threads_initialized = 0;
+atomic_int threads_failed = 0;
+atomic_int num_of_files_found = 0;
+
+DIR_FIFO_Q *dir_q;
+THREAD_FIFO_Q *thread_q;
+
+char *search_term;
+char *root_path;
+
+pthread_mutex_t thread_initializer;
+pthread_mutex_t queues_access;
+
+pthread_cond_t all_initialized;
+pthread_cond_t start_work;
+pthread_cond_t all_sleep;
+
+DIR_FIFO_Q *initialize_directories_queue()
 {
     DIR_FIFO_Q *dir_q = (DIR_FIFO_Q *)malloc(sizeof(DIR_FIFO_Q));
 
     if (dir_q == NULL)
     {
-        *status = FAILURE;
-        fprintf(stderr, "Failed allocating memory for the directory queue due to errno: %s\n", strerror(errno));
+        status = FAILURE;
+        fprintf(stderr, "Failed allocating memory for the directories queue due to errno: %s\n", strerror(errno));
         return NULL;
     }
 
     dir_q->first = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
     if (dir_q->first == NULL)
     {
-        *status = FAILURE;
-        fprintf(stderr, "Failed allocating memory for the directory entry due to errno: %s\n", strerror(errno));
+        status = FAILURE;
+        fprintf(stderr, "Failed allocating memory for the directories entry due to errno: %s\n", strerror(errno));
         return NULL;
     }
-    dir_q->first->dir = NULL;
-    dir_q->first->next = NULL;
+
     dir_q->last = dir_q->first;
     return dir_q;
 }
-
-int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term)
+THREAD_FIFO_Q *initialize_threads_queue()
 {
-    DIR *dir = dir_q->first->dir;
+    THREAD_FIFO_Q *thread_q = (THREAD_FIFO_Q *)malloc(sizeof(THREAD_FIFO_Q));
+
+    if (thread_q == NULL)
+    {
+        status = FAILURE;
+        fprintf(stderr, "Failed allocating memory for the threads queue due to errno: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    thread_q->first = (THREAD_ENTRY *)malloc(sizeof(THREAD_ENTRY));
+    if (thread_q->first == NULL)
+    {
+        status = FAILURE;
+        fprintf(stderr, "Failed allocating memory for the thread entry due to errno: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    thread_q->last = thread_q->first;
+    return thread_q;
+}
+
+pthread_t *initialize_threads_id_arr()
+{
+    pthread_t *threads_id = (pthread_t *)malloc(num_of_threads * sizeof(pthread_t));
+    if (threads_id == NULL)
+    {
+        status = FAILURE;
+        fprintf(stderr, "Failed allocating memory for the threads_id array due to errno: %s\n", strerror(errno));
+        return NULL;
+    }
+}
+void *thread_func(void *thread_param)
+{
+    DIR *dir_to_handle;
+    pthread_cond_t my_condition_variable;
+    THREAD_ENTRY *my_thread_entry = (THREAD_ENTRY *)malloc(sizeof(THREAD_ENTRY));
+    if (my_thread_entry == NULL)
+    {
+        status = FAILURE;
+        fprintf(stderr, "Failed allocating memory for thread number %lu due to errno: %s\n", pthread_self(), strerror(errno));
+        threads_failed++;
+        if (threads_failed == num_of_threads)
+        {
+            pthread_cond_signal(&all_initialized);
+        }
+        pthread_exit((void *)FAILURE);
+    }
+
+    pthread_cond_init(&my_condition_variable, NULL);
+    my_thread_entry->my_condition_variable = my_condition_variable;
+
+    /* increment the number of threads started by one */
+    threads_initialized++;
+    /* put thread to sleep */
+    pthread_mutex_lock(&thread_initializer);
+    if (threads_initialized + threads_failed == num_of_threads)
+    {
+        /* last thread creation */
+        pthread_cond_signal(&all_initialized);
+    }
+    /* calling cond_wait sleeping the thread and release the mutex so other threads can go to sleep*/
+    pthread_cond_wait(&start_work, &thread_initializer);
+    /* thread woke up and immediately locked the mutex */
+    /* finally release the mutex in order to let other threads wake up */
+    pthread_mutex_unlock(&thread_initializer);
+
+    pthread_mutex_lock(&queues_access);
+    dir_to_handle = dequeue_dir(dir_q);
+    if (dir_to_handle = NULL)
+    {
+        enqueue(my_thread_entry);
+        if (thread_q->len == threads_initialized)
+        {
+            pthread_cond_signal(&all_sleep);
+        }
+    }
+    pthread_mutex_unlock(&queues_access);
+    if (dir_to_handle != NULL)
+    {
+        my_thread_entry->dir_to_handle = dir_to_handle;
+        scan_dir(my_thread_entry);
+    }
+
+    do
+    {
+        pthread_mutex_lock(&queues_access);
+        if (done == 1)
+        {
+            pthread_exit((void *)SUCCESS);
+        }
+
+        if (thread_q->len == threads_initialized)
+        {
+            pthread_cond_signal(&all_sleep);
+        }
+
+        pthread_cond_wait(&my_condition_variable, &queues_access);
+        pthread_mutex_unlock(&queues_access);
+
+        scan_dir(my_thread_entry);
+    } while (1);
+}
+
+void scan_dir(THREAD_ENTRY *my_thread_entry)
+{
     struct dirent *curr_entry;
     struct stat curr_statbuf;
     char *curr_name;
     char curr_path[PATH_MAX];
     DIR *new_dir;
+    THREAD_ENTRY *next_thread_in_queue;
 
     errno = 0;
-    while ((curr_entry = readdir(dir)) != NULL)
+    while ((curr_entry = readdir(my_thread_entry->dir_to_handle->dir)) != NULL)
     {
         curr_name = curr_entry->d_name;
 
@@ -72,27 +217,20 @@ int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term)
         }
 
         /* modifying the path of the current dirent */
-        strcpy(curr_path, dir_q->first->path);
+        strcpy(curr_path, my_thread_entry->dir_to_handle->path);
         strcat(curr_path, curr_name);
 
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
         if (stat(curr_path, &curr_statbuf) != 0)
         {
-            printf("the following directory made the problem: %s\n", curr_path);
-            printf("File Permissions: \t");
-            printf((S_ISDIR(curr_statbuf.st_mode)) ? "d" : "-");
-            printf((curr_statbuf.st_mode & S_IRUSR) ? "r" : "-");
-            printf((curr_statbuf.st_mode & S_IWUSR) ? "w" : "-");
-            printf((curr_statbuf.st_mode & S_IXUSR) ? "x" : "-");
-            printf((curr_statbuf.st_mode & S_IRGRP) ? "r" : "-");
-            printf((curr_statbuf.st_mode & S_IWGRP) ? "w" : "-");
-            printf((curr_statbuf.st_mode & S_IXGRP) ? "x" : "-");
-            printf((curr_statbuf.st_mode & S_IROTH) ? "r" : "-");
-            printf((curr_statbuf.st_mode & S_IWOTH) ? "w" : "-");
-            printf((curr_statbuf.st_mode & S_IXOTH) ? "x" : "-");
-            printf("\n\n");
+            status = FAILURE;
             fprintf(stderr, "Failed when tried to check dir status due to errno: %s\n", strerror(errno));
-            return FAILURE;
+            threads_failed++;
+            if (threads_failed == num_of_threads)
+            {
+                pthread_cond_signal(&all_sleep);
+            }
+            pthread_exit((void *)FAILURE);
         }
 
         if (S_ISDIR(curr_statbuf.st_mode))
@@ -107,11 +245,17 @@ int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term)
             {
                 /* directory can be searched */
                 strcat(curr_path, "/");
-                /*printf("after concatenation: %s\n", curr_path);*/
-                if (enqueue(dir_q, new_dir, curr_path) == FAILURE)
+                pthread_mutex_lock(&queues_access);
+                next_thread_in_queue = dequeue_thread(thread_q);
+                if (next_thread_in_queue == NULL)
                 {
-                    /* enqueuing failed */
-                    return FAILURE;
+                    enqueue_dir(new_dir, curr_path);
+                }
+                pthread_mutex_unlock(&queues_access);
+                if (next_thread_in_queue != NULL)
+                {
+                    next_thread_in_queue->dir_to_handle = new_dir;
+                    pthread_cond_signal(&next_thread_in_queue->my_condition_variable);
                 }
             }
         }
@@ -121,48 +265,78 @@ int iterate_dir(DIR_FIFO_Q *dir_q, const char *search_term)
             if (strstr(curr_name, search_term))
             {
                 /* the file name contains the search term */
+                num_of_files_found++;
                 printf("%s\n", curr_path);
             }
         }
     }
     if (errno != 0)
     {
-        fprintf(stderr, "Failed when tried to read dir ( readdir() ) content in some iteration due to errno: %s\n", strerror(errno));
-        return FAILURE;
+        status = FAILURE;
+        fprintf(stderr, "Threads number %lu failed when tried to read dir ( readdir() ) content in some iteration due to errno: %s\n", pthread_self(), strerror(errno));
+        threads_failed++;
+        if (threads_failed == num_of_threads)
+        {
+            pthread_cond_signal(&all_sleep);
+        }
+        pthread_exit((void *)FAILURE);
     }
-    return SUCCESS;
 }
 
-DIR_ENTRY *dequeue(DIR_FIFO_Q *dir_q)
+DIR_ENTRY *dequeue_dir()
 {
     DIR_ENTRY *ret = dir_q->first;
     dir_q->first = dir_q->first->next;
+    dir_q->len++;
     return ret;
 }
 
-int enqueue(DIR_FIFO_Q *dir_q, DIR *dir, char *path)
+THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
 {
-    int status = SUCCESS;
+    THREAD_ENTRY *ret = thread_q->first;
+    thread_q->first = thread_q->first->next;
+    thread_q->len--;
+    return ret;
+}
+
+void enqueue_dir(DIR *dir, char *path)
+{
     dir_q->last->next = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
     if (dir_q->last->next == NULL)
     {
         status = FAILURE;
         fprintf(stderr, "Failed allocating memory for the directory entry due to errno: %s\n", strerror(errno));
+        threads_failed++;
+        if (threads_failed == num_of_threads)
+        {
+            pthread_cond_signal(&all_sleep);
+        }
+        pthread_exit((void *)FAILURE);
     }
     dir_q->last = dir_q->last->next;
     dir_q->last->dir = dir;
     strcpy(dir_q->last->path, path);
-    dir_q->last->next = NULL;
-    return status;
+    if (dir_q->len == 0)
+    {
+        dir_q->first = dir_q->last;
+    }
+    dir_q->len++;
+}
+
+void enqueue_thread(THREAD_ENTRY *my_thread_entry)
+{
+    thread_q->last->next = my_thread_entry;
+    thread_q->last = thread_q->last->next;
+    thread_q->len++;
 }
 
 int main(int argc, char *argv[])
 {
-    int status = SUCCESS;
-    char *path, *search_term;
     DIR *root;
-    DIR_FIFO_Q *dir_q;
+    pthread_t *threads_id;
+    THREAD_ENTRY *th;
 
+    status = SUCCESS;
     if (argc != 4)
     {
         /* numbar of arguments isn't valid */
@@ -171,19 +345,22 @@ int main(int argc, char *argv[])
         return status;
     }
 
-    path = argv[1];
+    root_path = argv[1];
     search_term = argv[2];
-    root = opendir(path);
+    num_of_threads = atoi(argv[3]);
+    root = opendir(root_path);
 
     if (root == NULL)
     {
         /* root directory can't be searched */
         status = FAILURE;
-        printf("Directory %s: Permission denied.\n", path);
+        printf("Directory %s: Permission denied.\n", root_path);
+        printf("Done searching, found %d files\n", num_of_files_found);
+        return status;
     }
 
-    /* initializing the directory queue */
-    dir_q = initialize_directory_queue(&status);
+    /* initializing the directories queue */
+    dir_q = initialize_directories_queue();
     if (dir_q == NULL)
     {
         /* initializing failed */
@@ -191,19 +368,116 @@ int main(int argc, char *argv[])
     }
 
     dir_q->first->dir = root;
-    strcpy(dir_q->first->path, path);
+    strcpy(dir_q->first->path, root_path);
 
-    /****** create argv[3] threads ******/
-
-    while (dir_q->first != NULL)
+    /* initializing the threads_id array */
+    threads_id = initialize_threads_id_arr();
+    if (threads_id == NULL)
     {
-        status = iterate_dir(dir_q, search_term);
-        if (status == FAILURE)
+        /* initializing failed */
+        return status;
+    }
+
+    /* initializing the threads queue */
+    thread_q = initialize_threads_queue();
+    if (thread_q == NULL)
+    {
+        /* initializing failed */
+        return status;
+    }
+
+    /* initializing mutex and condition variable */
+    pthread_mutex_init(&thread_initializer, NULL);
+    pthread_cond_init(&all_initialized, NULL);
+    pthread_cond_init(&start_work, NULL);
+
+    pthread_mutex_init(&queues_access, NULL);
+    pthread_cond_init(&all_sleep, NULL);
+
+    /* creating num_of_threads - 1 (=argv[3] - 1) threads */
+    for (int i = 0; i < num_of_threads - 1; i++)
+    {
+        if (pthread_create(&threads_id[i], NULL, thread_func, NULL) != SUCCESS)
         {
-            /* Failed when tried to read dir content */
+            status = FAILURE;
+            fprintf(stderr, "Failed creating thread number %d due to errno: %s\n", i, strerror(errno));
             return status;
         }
-        dequeue(dir_q);
-        /* free the dequeued entry????????? */
     }
+
+    /* lock in main before all_initialized condition is met */
+    pthread_mutex_lock(&thread_initializer);
+
+    /* now it can create the last thread that will meet the condition all_initialized */
+    if (pthread_create(&threads_id[num_of_threads], NULL, thread_func, NULL) != 0)
+    {
+        status = FAILURE;
+        fprintf(stderr, "Failed creating thread number %d due to errno: %s\n", num_of_threads, strerror(errno));
+        return status;
+    }
+
+    pthread_cond_wait(&all_initialized, &thread_initializer);
+    /* unlocked thread_initializer so last thread created can lock it and signal all_initialized */
+
+    if (threads_failed == num_of_threads)
+    {
+        return status;
+    }
+
+    /* all_initialized sent we can unlock thread_initializer so threads can respond to start_work */
+    pthread_mutex_unlock(&thread_initializer);
+
+    /* lock queues before all searching threads to ensure reaching all_sleep condition */
+    pthread_mutex_lock(&queues_access);
+
+    /* wake up all threads */
+    pthread_cond_broadcast(&start_work);
+
+    /* waiting for all threads to finish their work */
+    pthread_cond_wait(&all_sleep, &queues_access);
+
+    if (threads_failed == num_of_threads)
+    {
+        return status;
+    }
+
+    done = 1;
+    th = thread_q->first;
+    /* wake up all threads so they can exit cleanly */
+    while (th != NULL)
+    {
+        pthread_cond_signal(&th->my_condition_variable);
+        th = th->next;
+    }
+
+    /* searching threads work is done */
+    pthread_mutex_unlock(&queues_access);
+
+    /* waiting for all threads to finish their work */
+    for (int i = 0; i < num_of_threads; i++)
+    {
+        if (pthread_join(threads_id[i], NULL) != SUCCESS)
+        {
+            status = FAILURE;
+            fprintf(stderr, "Failed joining thread %d due to errno: %s\n", i, strerror(errno));
+            return status;
+        }
+    }
+
+    pthread_cond_destroy(&all_initialized);
+    pthread_cond_destroy(&start_work);
+    pthread_mutex_destroy(&thread_initializer);
+
+    pthread_cond_destroy(&all_sleep);
+    th = thread_q->first;
+    /* destroy all threads' condition variables */
+    while (th != NULL)
+    {
+        pthread_cond_destroy(&th->my_condition_variable);
+        th = th->next;
+    }
+    pthread_mutex_destroy(&queues_access);
+
+    printf("Done searching, found %d files\n", num_of_files_found);
+    return status;
 }
