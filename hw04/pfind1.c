@@ -29,7 +29,7 @@ typedef struct THREAD_ENTRY
 {
     pthread_cond_t *my_condition_variable;
     DIR *dir;
-    char *path;
+    char path[PATH_MAX];
     struct THREAD_ENTRY *next;
 } THREAD_ENTRY;
 
