@@ -260,6 +260,11 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 /* directory can be searched */
                 strcat(curr_path, "/");
                 pthread_mutex_lock(&queues_access);
+                while (next_thread_in_queue != NULL)
+                {
+                    printf("thread_q before dequeue, cv is: %lu\n", next_thread_in_queue->my_condition_variable);
+                }
+                
                 next_thread_in_queue = dequeue_thread(thread_q);
                 if (next_thread_in_queue == NULL)
                 {
