@@ -174,8 +174,10 @@ void *thread_func(void *thread_param)
         }
     }
     pthread_mutex_unlock(&queues_access);
+
     if (dir_to_handle != NULL)
     {
+        /* the thread that 'caught' the root need to handle it and only after that enter the queue */
         my_thread_entry->dir = dir_to_handle->dir;
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
@@ -186,7 +188,7 @@ void *thread_func(void *thread_param)
         }
     }
 
-    printf("thread start looping with %d\n", dir_to_handle != NULL ? 1 : 0);
+    printf("thread number %lu start looping with %d\n", pthread_self(), dir_to_handle != NULL ? 1 : 0);
 
     do
     {
@@ -200,7 +202,7 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_sleep);
         }
-        printf("thread goes to sleep\n");
+        printf("thread number %lu goes to sleep\n", pthread_self());
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
