@@ -149,10 +149,11 @@ void *thread_func(void *thread_param)
     pthread_cond_init(&my_condition_variable, NULL);
     my_thread_entry->my_condition_variable = &my_condition_variable;
 
-    /* increment the number of threads started by one */
-    threads_initialized++;
     /* put thread to sleep */
     pthread_mutex_lock(&thread_initializer);
+    /* increment the number of threads started by one */
+    threads_initialized++;
+    
     if (threads_initialized + threads_failed == num_of_threads)
     {
         /* last thread creation */
