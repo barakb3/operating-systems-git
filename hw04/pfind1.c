@@ -533,7 +533,7 @@ int main(int argc, char *argv[])
     printf("all threads went to sleep\n");
     if (dir_q->first == NULL)
     {
-        printf("dir_q i empty\n");
+        printf("dir_q is empty\n");
     }
     else
     {
