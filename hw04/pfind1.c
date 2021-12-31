@@ -300,10 +300,12 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
 DIR_ENTRY *dequeue_dir()
 {
+    printf("enterd dequeue\n");
     if (dir_q->first == NULL)
     {
         return NULL;
     }
+    printf("dir_q->first isn't null\n");
     DIR_ENTRY *ret = dir_q->first;
     dir_q->first = dir_q->first->next;
     dir_q->len++;
