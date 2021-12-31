@@ -27,7 +27,7 @@ typedef struct DIR_FIFO_Q
 
 typedef struct THREAD_ENTRY
 {
-    pthread_cond_t my_condition_variable;
+    pthread_cond_t *my_condition_variable;
     DIR *dir;
     char *path;
     struct THREAD_ENTRY *next;
@@ -145,7 +145,7 @@ void *thread_func(void *thread_param)
     }
 
     pthread_cond_init(&my_condition_variable, NULL);
-    my_thread_entry->my_condition_variable = my_condition_variable;
+    my_thread_entry->my_condition_variable = &my_condition_variable;
 
     /* increment the number of threads started by one */
     threads_initialized++;
@@ -268,8 +268,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 {
                     next_thread_in_queue->dir = new_dir;
                     next_thread_in_queue->path = curr_path;
-                    cv = next_thread_in_queue->my_condition_variable;
-                    pthread_cond_signal(&cv);
+                    pthread_cond_signal(next_thread_in_queue->my_condition_variable);
                 }
             }
         }
@@ -475,7 +474,7 @@ int main(int argc, char *argv[])
     /* wake up all threads so they can exit cleanly */
     while (th != NULL)
     {
-        pthread_cond_signal(&th->my_condition_variable);
+        pthread_cond_signal(th->my_condition_variable);
         th = th->next;
     }
 
@@ -504,7 +503,7 @@ int main(int argc, char *argv[])
     /* destroy all threads' condition variables */
     while (th != NULL)
     {
-        pthread_cond_destroy(&th->my_condition_variable);
+        pthread_cond_destroy(th->my_condition_variable);
         th = th->next;
     }
     pthread_mutex_destroy(&queues_access);
