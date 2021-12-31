@@ -163,7 +163,6 @@ void *thread_func(void *thread_param)
     pthread_mutex_unlock(&thread_initializer);
 
     pthread_mutex_lock(&queues_access);
-    printf("before dequeue\n");
     dir_to_handle = dequeue_dir(dir_q);
 
     if (dir_to_handle == NULL)
@@ -177,14 +176,12 @@ void *thread_func(void *thread_param)
     pthread_mutex_unlock(&queues_access);
     if (dir_to_handle != NULL)
     {
-        printf("entered here\n");
         my_thread_entry->dir = dir_to_handle->dir;
         my_thread_entry->path = dir_to_handle->path;
-        printf("dir and path of root copied\n");
         scan_dir(my_thread_entry);
     }
 
-    printf("thread start looping withhhhhhhhh %d\n", dir_to_handle != NULL ? 1 : 0);
+    printf("thread start looping with %d\n", dir_to_handle != NULL ? 1 : 0);
 
     do
     {
@@ -198,7 +195,7 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_sleep);
         }
-        printf("thread goes to sleeppppppppp\n");
+        printf("thread goes to sleep\n");
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
 
@@ -221,8 +218,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
-    {   
-        printd("enterd while\n");
+    {
         curr_name = curr_entry->d_name;
 
         if (strcmp(curr_name, ".") == 0 || strcmp(curr_name, "..") == 0)
@@ -302,12 +298,10 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
 DIR_ENTRY *dequeue_dir()
 {
-    printf("enterd dequeue\n");
     if (dir_q->first == NULL)
     {
         return NULL;
     }
-    printf("dir_q->first isn't null\n");
     DIR_ENTRY *ret = dir_q->first;
     dir_q->first = dir_q->first->next;
     dir_q->len++;
