@@ -321,6 +321,7 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
     THREAD_ENTRY *ret = thread_q->first;
     thread_q->first = thread_q->first->next;
     thread_q->len--;
+    printf("cv address in dequeue is: %lu\n", ret->my_condition_variable);
     return ret;
 }
 
@@ -357,7 +358,7 @@ void enqueue_thread(THREAD_ENTRY *my_thread_entry)
         thread_q->first = dir_q->last;
     }
     thread_q->len++;
-    printf("cv address in enqueue is: %lu\n", my_thread_entry->my_condition_variable);
+    printf("cv address in enqueue is: %lu\n", thread_q->last->my_condition_variable);
 }
 
 int main(int argc, char *argv[])
