@@ -178,6 +178,7 @@ void *thread_func(void *thread_param)
     {
         my_thread_entry->dir = dir_to_handle->dir;
         my_thread_entry->path = dir_to_handle->path;
+        printf("dir and path of root copied\n");
         scan_dir(my_thread_entry);
     }
 
