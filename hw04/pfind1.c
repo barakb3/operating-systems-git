@@ -232,7 +232,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         strcat(curr_path, curr_name);
 
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
-        printf("curr path to check with stat is: %s", curr_path);
+        printf("curr path to check with stat is: %s\n", curr_path);
         if (stat(curr_path, &curr_statbuf) != 0)
         {
             status = FAILURE;
