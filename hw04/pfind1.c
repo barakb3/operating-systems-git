@@ -307,7 +307,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     if (next_dir_in_queue == NULL)
     {
         my_thread_entry->dir = NULL;
-        my_thread_entry->path = NULL;
+        strcpy(my_thread_entry->path, NULL);
         my_thread_entry->next = NULL;
         enqueue_thread(my_thread_entry);
         if (thread_q->len == threads_initialized)
