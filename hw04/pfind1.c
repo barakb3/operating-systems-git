@@ -201,7 +201,7 @@ void *thread_func(void *thread_param)
     do
     {
         pthread_mutex_lock(&queues_access);
-
+        printf("length og thread_q is %d\n", thread_q->len);
         if (thread_q->len == threads_initialized)
         {
             printf("all sleeppppppppppppppp\n");
