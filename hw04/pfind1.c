@@ -295,6 +295,10 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
 DIR_ENTRY *dequeue_dir()
 {
+    if (dir_q->first == NULL)
+    {
+        return NULL;
+    }
     DIR_ENTRY *ret = dir_q->first;
     dir_q->first = dir_q->first->next;
     dir_q->len++;
@@ -303,6 +307,10 @@ DIR_ENTRY *dequeue_dir()
 
 THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
 {
+    if (thread_q->first == NULL)
+    {
+        return NULL;
+    }
     THREAD_ENTRY *ret = thread_q->first;
     thread_q->first = thread_q->first->next;
     thread_q->len--;
