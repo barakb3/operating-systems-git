@@ -360,7 +360,7 @@ void enqueue_thread(THREAD_ENTRY *my_thread_entry)
     thread_q->last = thread_q->last->next;
     if (thread_q->len == 0)
     {
-        thread_q->first = dir_q->last;
+        thread_q->first = thread_q->last;
     }
     thread_q->len++;
     printf("cv address in enqueue is: %lu\n", thread_q->last->my_condition_variable);
