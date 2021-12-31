@@ -211,9 +211,9 @@ void *thread_func(void *thread_param)
         {
             pthread_exit((void *)SUCCESS);
         }
-
+        printf("thread number %lu woke up\n", pthread_self());
         pthread_mutex_unlock(&queues_access);
-
+        
         scan_dir(my_thread_entry);
     } while (1);
 }
@@ -228,9 +228,10 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     THREAD_ENTRY *next_thread_in_queue;
     DIR_ENTRY *next_dir_in_queue;
 
+    printf("thread number %lu started scanning %s", pthread_self(), my_thread_entry->path);
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
-    {   
+    {
         curr_name = curr_entry->d_name;
 
         if (strcmp(curr_name, ".") == 0 || strcmp(curr_name, "..") == 0)
