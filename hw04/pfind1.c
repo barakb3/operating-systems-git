@@ -235,7 +235,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
         if (stat(curr_path, &curr_statbuf) != 0)
         {
-            printf("enter stat check\n");
             status = FAILURE;
             fprintf(stderr, "Failed when tried to check dir status due to errno: %s\n", strerror(errno));
             threads_failed++;
@@ -278,6 +277,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         else
         {
             /* dirent isn't a directory */
+            printf("it's a file\n");
             if (strstr(curr_name, search_term))
             {
                 /* the file name contains the search term */
