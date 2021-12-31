@@ -197,7 +197,7 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_sleep);
         }
-        
+
         printf("thread is going to wait\n");
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
@@ -267,7 +267,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 {
                     next_thread_in_queue->dir = new_dir;
                     next_thread_in_queue->path = curr_path;
-                    pthread_cond_signal(&next_thread_in_queue->my_condition_variable);
+                    pthread_cond_signal(&(next_thread_in_queue->my_condition_variable));
                 }
             }
         }
