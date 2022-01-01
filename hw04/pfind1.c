@@ -31,6 +31,7 @@ typedef struct THREAD_ENTRY
     DIR *dir;
     char path[PATH_MAX];
     struct THREAD_ENTRY *next;
+    int debug_number;
 } THREAD_ENTRY;
 
 typedef struct THREAD_FIFO_Q
@@ -154,6 +155,10 @@ void *thread_func(void *thread_param)
     /* increment the number of threads started by one */
     threads_initialized++;
 
+
+    my_thread_entry->debug_number = threads_initialized;
+
+
     if (threads_initialized + threads_failed == num_of_threads)
     {
         /* last thread creation */
@@ -196,12 +201,11 @@ void *thread_func(void *thread_param)
         */
     }
 
-    printf("cv number %lu start looping with %d\n", &my_condition_variable, dir_to_handle != NULL ? 1 : 0);
+    printf("thread number %d start looping with %d\n", my_thread_entry->debug_number, dir_to_handle != NULL ? 1 : 0);
 
     do
     {
         pthread_mutex_lock(&queues_access);
-        printf("length og thread_q is %d\n", thread_q->len);
         if (thread_q->len == threads_initialized)
         {
             printf("all sleeppppppppppppppp\n");
@@ -213,7 +217,7 @@ void *thread_func(void *thread_param)
 
         if (done == 1)
         {
-            printf("thread number %lu exited\n", pthread_self());
+            printf("thread number %d exited\n", my_thread_entry->debug_number);
             pthread_mutex_unlock(&queues_access);
             /* destroy thread's condition variable */
             pthread_cond_destroy(&my_condition_variable);
@@ -371,7 +375,7 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
         thread_q->last = thread_q->first;
     }
     
-    printf("cv num %lu dequeued the queue\n", ret->my_condition_variable);
+    printf("thread number %d dequeued the queue\n", ret->debug_number);
     // printf("length of thread_q after dequeuing thread is %d\n", thread_q->len);
     return ret;
 }
@@ -418,7 +422,7 @@ void enqueue_dir(DIR *dir, char *path)
 
 void enqueue_thread(THREAD_ENTRY *my_thread_entry)
 {
-    printf("cv num %lu entered the queue\n", my_thread_entry->my_condition_variable);
+    printf("thread number %d entered the queue\n", my_thread_entry->debug_number);
     if (thread_q->len == 0)
     {
         thread_q->first = my_thread_entry;
@@ -589,6 +593,6 @@ int main(int argc, char *argv[])
     pthread_mutex_destroy(&queues_access);
 
     printf("Done searching, found %d files\n", num_of_files_found);
-    printf("status is: %d", status);
+    printf("status is: %d\n", status);
     return status;
 }
