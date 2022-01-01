@@ -125,7 +125,7 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_initialized);
         }
-        pthread_exit((void *)FAILURE);
+        pthread_exit((void *)status);
     }
 
     pthread_cond_init(&my_condition_variable, NULL);
@@ -225,7 +225,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
             {
                 pthread_cond_signal(&all_sleep);
             }
-            pthread_exit((void *)FAILURE);
+            pthread_exit((void *)status);
         }
 
         if (S_ISDIR(curr_statbuf.st_mode))
@@ -275,7 +275,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         {
             pthread_cond_signal(&all_sleep);
         }
-        pthread_exit((void *)FAILURE);
+        pthread_exit((void *)status);
     }
 
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
@@ -345,7 +345,7 @@ void enqueue_dir(DIR *dir, char *path)
             {
                 pthread_cond_signal(&all_sleep);
             }
-            pthread_exit((void *)FAILURE);
+            pthread_exit((void *)status);
         }
         dir_q->last = dir_q->first;
     }
@@ -361,7 +361,7 @@ void enqueue_dir(DIR *dir, char *path)
             {
                 pthread_cond_signal(&all_sleep);
             }
-            pthread_exit((void *)FAILURE);
+            pthread_exit((void *)status);
         }
         dir_q->last = dir_q->last->next;
     }
@@ -408,7 +408,7 @@ int main(int argc, char *argv[])
         /* numbar of arguments isn't valid */
         status = FAILURE;
         fprintf(stderr, "Number of arguments isn't valid\n");
-        return status;
+        exit(status);
     }
 
     root_path = argv[1];
@@ -422,7 +422,7 @@ int main(int argc, char *argv[])
         status = FAILURE;
         printf("Directory %s: Permission denied.\n", root_path);
         printf("Done searching, found %d files\n", num_of_files_found);
-        return status;
+        exit(status);
     }
 
     /* initializing the directories queue */
@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
     if (dir_q == NULL)
     {
         /* initializing failed */
-        return status;
+        exit(status);
     }
 
     enqueue_dir(root, root_path);
@@ -440,7 +440,7 @@ int main(int argc, char *argv[])
     if (threads_id == NULL)
     {
         /* initializing failed */
-        return status;
+        exit(status);
     }
 
     /* initializing the threads queue */
@@ -448,7 +448,7 @@ int main(int argc, char *argv[])
     if (thread_q == NULL)
     {
         /* initializing failed */
-        return status;
+        exit(status);
     }
 
     /* initializing mutex and condition variable */
@@ -466,7 +466,7 @@ int main(int argc, char *argv[])
         {
             status = FAILURE;
             fprintf(stderr, "Failed creating thread number %d due to errno: %s\n", i, strerror(errno));
-            return status;
+            exit(status);
         }
     }
 
@@ -478,7 +478,7 @@ int main(int argc, char *argv[])
     {
         status = FAILURE;
         fprintf(stderr, "Failed creating thread number %d due to errno: %s\n", num_of_threads, strerror(errno));
-        return status;
+        exit(status);
     }
 
     pthread_cond_wait(&all_initialized, &thread_initializer);
@@ -538,5 +538,5 @@ int main(int argc, char *argv[])
     pthread_mutex_destroy(&queues_access);
 
     printf("Done searching, found %d files\n", num_of_files_found);
-    return status;
+    exit(status);
 }
