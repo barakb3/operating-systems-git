@@ -473,8 +473,11 @@ int main(int argc, char *argv[])
         return status;
     }
 
+    enqueue_dir(root, root_path);
+    /*
     dir_q->first->dir = root;
     strcpy(dir_q->first->path, root_path);
+    */
 
     /* initializing the threads_id array */
     threads_id = initialize_threads_id_arr();
