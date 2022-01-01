@@ -125,7 +125,7 @@ void *thread_func(void *thread_param)
         {
             pthread_cond_signal(&all_initialized);
         }
-        pthread_exit((void *)status);
+        pthread_exit((void *)FAILURE);
     }
 
     pthread_cond_init(&my_condition_variable, NULL);
@@ -225,7 +225,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
             {
                 pthread_cond_signal(&all_sleep);
             }
-            pthread_exit((void *)status);
+            pthread_exit((void *)FAILURE);
         }
 
         if (S_ISDIR(curr_statbuf.st_mode))
@@ -275,7 +275,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         {
             pthread_cond_signal(&all_sleep);
         }
-        pthread_exit((void *)status);
+        pthread_exit((void *)FAILURE);
     }
 
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
@@ -345,7 +345,7 @@ void enqueue_dir(DIR *dir, char *path)
             {
                 pthread_cond_signal(&all_sleep);
             }
-            pthread_exit((void *)status);
+            pthread_exit((void *)FAILURE);
         }
         dir_q->last = dir_q->first;
     }
@@ -361,7 +361,7 @@ void enqueue_dir(DIR *dir, char *path)
             {
                 pthread_cond_signal(&all_sleep);
             }
-            pthread_exit((void *)status);
+            pthread_exit((void *)FAILURE);
         }
         dir_q->last = dir_q->last->next;
     }
