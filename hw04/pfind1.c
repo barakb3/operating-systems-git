@@ -81,15 +81,7 @@ DIR_FIFO_Q *initialize_directories_queue()
         fprintf(stderr, "Failed allocating memory for the directories queue due to errno: %s\n", strerror(errno));
         return NULL;
     }
-    /*
-    dir_q->first = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
-    if (dir_q->first == NULL)
-    {
-        status = FAILURE;
-        fprintf(stderr, "Failed allocating memory for the directories entry due to errno: %s\n", strerror(errno));
-        return NULL;
-    }
-    */
+    
     dir_q->last = dir_q->first;
     return dir_q;
 }
@@ -103,17 +95,7 @@ THREAD_FIFO_Q *initialize_threads_queue()
         fprintf(stderr, "Failed allocating memory for the threads queue due to errno: %s\n", strerror(errno));
         return NULL;
     }
-    /*
-    thread_q->first = (THREAD_ENTRY *)malloc(sizeof(THREAD_ENTRY));
-    if (thread_q->first == NULL)
-    {
-        status = FAILURE;
-        fprintf(stderr, "Failed allocating memory for the thread entry due to errno: %s\n", strerror(errno));
-        return NULL;
-    }
-
-    thread_q->last = thread_q->first;
-    */
+    
     thread_q->len = 0;
     return thread_q;
 }
@@ -194,23 +176,19 @@ void *thread_func(void *thread_param)
 
         if (thread_q->len == threads_initialized)
         {
-            printf("all sleeppppppppppppppp\n");
             pthread_cond_signal(&all_sleep);
         }
         
-        // printf("thread number %d goes to sleep\n", my_thread_entry->debug_number);
-
         pthread_cond_wait(&my_condition_variable, &queues_access);
-        // printf("signal received by thread number %d\n", my_thread_entry->debug_number);
+    
         if (done == 1)
         {
-            printf("thread number %d exited\n", my_thread_entry->debug_number);
             pthread_mutex_unlock(&queues_access);
             /* destroy thread's condition variable */
             pthread_cond_destroy(&my_condition_variable);
             pthread_exit((void *)SUCCESS);
         }
-        // printf("thread number %lu woke up\n", pthread_self());
+
         pthread_mutex_unlock(&queues_access);
 
         scan_dir(my_thread_entry);
@@ -227,7 +205,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     THREAD_ENTRY *next_thread_in_queue;
     DIR_ENTRY *next_dir_in_queue;
 
-    //printf("thread number %lu started scanning %s\n", pthread_self(), my_thread_entry->path);
     errno = 0;
     while ((curr_entry = readdir(my_thread_entry->dir)) != NULL)
     {
@@ -273,12 +250,10 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 if (next_thread_in_queue == NULL)
                 {
                     enqueue_dir(new_dir, curr_path);
-                    printf("dir enqueued: %s\n", curr_name);
                 }
                 pthread_mutex_unlock(&queues_access);
                 if (next_thread_in_queue != NULL)
                 {
-                    printf("dir found thread: %s\n", curr_name);
                     next_thread_in_queue->dir = new_dir;
                     strcpy(next_thread_in_queue->path, curr_path);
                     pthread_cond_signal(next_thread_in_queue->my_condition_variable);
@@ -295,8 +270,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
             {
                 /* the file name contains the search term */
                 num_of_files_found++;
-                printf ("file printed: %s\n", curr_name);
-                // printf("%s\n", curr_path);
+                printf("%d, %s\n",num_of_files_found, curr_path);
             }
         }
     }
@@ -311,8 +285,8 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         }
         pthread_exit((void *)FAILURE);
     }
+    
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
-    // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
     pthread_mutex_unlock(&queues_access);
@@ -320,7 +294,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     if (next_dir_in_queue != NULL)
     {
         /* the thread need to handle the directory (strat scan_dir from the beginning) */
-        printf("dir dequeue: %s\n", next_dir_in_queue->path);
         my_thread_entry->dir = next_dir_in_queue->dir;
         strcpy(my_thread_entry->path, next_dir_in_queue->path);
         scan_dir(my_thread_entry);
@@ -342,7 +315,6 @@ DIR_ENTRY *dequeue_dir()
 
 THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
 {
-    THREAD_ENTRY *th;
     if (thread_q->first == NULL)
     {
         return NULL;
@@ -364,8 +336,6 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
     }
     printf("\n");
     */
-
-    // printf("length of thread_q after dequeuing thread is %d\n", thread_q->len);
     return ret;
 }
 
@@ -411,8 +381,6 @@ void enqueue_dir(DIR *dir, char *path)
 
 void enqueue_thread(THREAD_ENTRY *my_thread_entry)
 {
-    THREAD_ENTRY *th;
-
     if (thread_q->len == 0)
     {
         thread_q->first = my_thread_entry;
@@ -474,10 +442,6 @@ int main(int argc, char *argv[])
     }
 
     enqueue_dir(root, root_path);
-    /*
-    dir_q->first->dir = root;
-    strcpy(dir_q->first->path, root_path);
-    */
 
     /* initializing the threads_id array */
     threads_id = initialize_threads_id_arr();
@@ -544,16 +508,6 @@ int main(int argc, char *argv[])
 
     /* waiting for all threads to finish their work */
     pthread_cond_wait(&all_sleep, &queues_access);
-    printf("all threads went to sleep\n");
-    if (dir_q->first == NULL)
-    {
-        printf("dir_q is empty\n");
-    }
-    else
-    {
-        printf("dir_q isn't empty\n");
-    }
-    
 
     if (threads_failed == num_of_threads)
     {
@@ -561,8 +515,6 @@ int main(int argc, char *argv[])
     }
 
     done = 1;
-
-    //printf("after work is done\n");
 
     /* searching threads work is done */
     pthread_mutex_unlock(&queues_access);
@@ -574,8 +526,6 @@ int main(int argc, char *argv[])
         pthread_cond_signal(th->my_condition_variable);
         th = th->next;
     }
-    
-    // printf("queue_access unlocked from main\n");
 
     /* waiting for all threads to finish their work */
     for (int i = 0; i < num_of_threads; i++)
