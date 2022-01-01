@@ -172,18 +172,19 @@ void *thread_func(void *thread_param)
 
     pthread_mutex_lock(&queues_access);
     dir_to_handle = dequeue_dir(dir_q);
-
+    /*
     if (dir_to_handle == NULL)
     {
         // printf("going to enqueue threaddddddddddd\n");
         enqueue_thread(my_thread_entry);
-        /*
-        if (thread_q->len == threads_initialized)
-        {
-            pthread_cond_signal(&all_sleep);
-        }
-        */
+        
+        // if (thread_q->len == threads_initialized)
+        // {
+        //     pthread_cond_signal(&all_sleep);
+        // }
+        
     }
+    */
     pthread_mutex_unlock(&queues_access);
 
     if (dir_to_handle != NULL)
@@ -329,8 +330,10 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     }
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
     // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
+    pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
-    
+    pthread_mutex_unlock(&queues_access);
+
     /*
     pthread_mutex_lock(&queues_access);
 
