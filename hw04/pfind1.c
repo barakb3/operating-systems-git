@@ -201,7 +201,7 @@ void *thread_func(void *thread_param)
         */
     }
 
-    printf("thread number %d start looping with %d\n", my_thread_entry->debug_number, dir_to_handle != NULL ? 1 : 0);
+    //printf("thread number %d start looping with %d\n", my_thread_entry->debug_number, dir_to_handle != NULL ? 1 : 0);
 
     do
     {
@@ -363,6 +363,7 @@ DIR_ENTRY *dequeue_dir()
 
 THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
 {
+    THREAD_ENTRY *th;
     if (thread_q->first == NULL)
     {
         return NULL;
@@ -374,8 +375,17 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
     {
         thread_q->last = thread_q->first;
     }
+
+    th = thread_q->first;
+    printf("thread number %d dequeued the queue: ", ret->debug_number);
+    while (th != NULL)
+    {
+        printf("%d  ", th->debug_number);
+        th = th->next;
+    }
+    printf("\n");
     
-    printf("thread number %d dequeued the queue\n", ret->debug_number);
+    printf("thread_q:")
     // printf("length of thread_q after dequeuing thread is %d\n", thread_q->len);
     return ret;
 }
@@ -422,6 +432,7 @@ void enqueue_dir(DIR *dir, char *path)
 
 void enqueue_thread(THREAD_ENTRY *my_thread_entry)
 {
+    THREAD_ENTRY *th;
     printf("thread number %d entered the queue\n", my_thread_entry->debug_number);
     if (thread_q->len == 0)
     {
@@ -434,6 +445,15 @@ void enqueue_thread(THREAD_ENTRY *my_thread_entry)
         thread_q->last = thread_q->last->next;
     }
     thread_q->len++;
+
+    th = thread_q->first;
+    printf("thread number %d enqueued tto queue: ", my_thread_entry->debug_number);
+    while (th != NULL)
+    {
+        printf("%d  ", th->debug_number);
+        th = th->next;
+    }
+    printf("\n");
 }
 
 int main(int argc, char *argv[])
