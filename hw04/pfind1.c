@@ -207,7 +207,7 @@ void *thread_func(void *thread_param)
     {
         pthread_mutex_lock(&queues_access);
         /* if didn't find dir to handle in scan dir it goes bacl here and enter the queue */
-        
+
         my_thread_entry->dir = NULL;
         strcpy(my_thread_entry->path, "\0");
         my_thread_entry->next = NULL;
@@ -329,9 +329,10 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     }
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
     // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
+    next_dir_in_queue = dequeue_dir(dir_q);
+    
     /*
     pthread_mutex_lock(&queues_access);
-    next_dir_in_queue = dequeue_dir(dir_q);
 
     if (next_dir_in_queue == NULL)
     {
