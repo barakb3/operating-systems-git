@@ -211,7 +211,8 @@ void *thread_func(void *thread_param)
             printf("all sleeppppppppppppppp\n");
             pthread_cond_signal(&all_sleep);
         }
-        // printf("thread number %lu goes to sleep\n", pthread_self());
+        
+        printf("thread number %d goes to sleep\n", my_thread_entry->debug_number);
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
         printf("signal received by thread number %d\n", my_thread_entry->debug_number);
