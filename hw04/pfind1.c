@@ -270,7 +270,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
             {
                 /* the file name contains the search term */
                 num_of_files_found++;
-                printf("%d, %s\n",num_of_files_found, curr_path);
+                printf("%s\n", curr_path);
             }
         }
     }
@@ -285,7 +285,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         }
         pthread_exit((void *)FAILURE);
     }
-    
+
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
@@ -546,6 +546,5 @@ int main(int argc, char *argv[])
     pthread_mutex_destroy(&queues_access);
 
     printf("Done searching, found %d files\n", num_of_files_found);
-    printf("status is: %d\n", status);
     return status;
 }
