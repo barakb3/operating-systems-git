@@ -177,7 +177,6 @@ void *thread_func(void *thread_param)
     if (dir_to_handle != NULL)
     {
         /* the thread that 'caught' the root need to handle it and only after that enter the queue */
-        printf("AAA\n");
         my_thread_entry->dir = dir_to_handle->dir;
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
@@ -274,10 +273,12 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                 if (next_thread_in_queue == NULL)
                 {
                     enqueue_dir(new_dir, curr_path);
+                    printf("dir enqueued: %s\n", curr_name);
                 }
                 pthread_mutex_unlock(&queues_access);
                 if (next_thread_in_queue != NULL)
                 {
+                    printf("dir found thread: %s\n", curr_name);
                     next_thread_in_queue->dir = new_dir;
                     strcpy(next_thread_in_queue->path, curr_path);
                     pthread_cond_signal(next_thread_in_queue->my_condition_variable);
@@ -294,6 +295,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
             {
                 /* the file name contains the search term */
                 num_of_files_found++;
+                printf ("file printed: %s\n", curr_name);
                 // printf("%s\n", curr_path);
             }
         }
@@ -313,6 +315,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
+    printf("dir dequeue: %s\n", next_dir_in_queue->path);
     pthread_mutex_unlock(&queues_access);
 
     if (next_dir_in_queue != NULL)
