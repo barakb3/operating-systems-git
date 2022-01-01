@@ -172,19 +172,6 @@ void *thread_func(void *thread_param)
 
     pthread_mutex_lock(&queues_access);
     dir_to_handle = dequeue_dir(dir_q);
-    /*
-    if (dir_to_handle == NULL)
-    {
-        // printf("going to enqueue threaddddddddddd\n");
-        enqueue_thread(my_thread_entry);
-        
-        // if (thread_q->len == threads_initialized)
-        // {
-        //     pthread_cond_signal(&all_sleep);
-        // }
-        
-    }
-    */
     pthread_mutex_unlock(&queues_access);
 
     if (dir_to_handle != NULL)
@@ -193,16 +180,7 @@ void *thread_func(void *thread_param)
         my_thread_entry->dir = dir_to_handle->dir;
         strcpy(my_thread_entry->path, dir_to_handle->path);
         scan_dir(my_thread_entry);
-
-        /*
-        if (thread_q->len == threads_initialized)
-        {
-            pthread_cond_signal(&all_sleep);
-        }
-        */
     }
-
-    //printf("thread number %d start looping with %d\n", my_thread_entry->debug_number, dir_to_handle != NULL ? 1 : 0);
 
     do
     {
@@ -220,10 +198,10 @@ void *thread_func(void *thread_param)
             pthread_cond_signal(&all_sleep);
         }
         
-        printf("thread number %d goes to sleep\n", my_thread_entry->debug_number);
+        // printf("thread number %d goes to sleep\n", my_thread_entry->debug_number);
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
-        printf("signal received by thread number %d\n", my_thread_entry->debug_number);
+        // printf("signal received by thread number %d\n", my_thread_entry->debug_number);
         if (done == 1)
         {
             printf("thread number %d exited\n", my_thread_entry->debug_number);
@@ -333,26 +311,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
     pthread_mutex_unlock(&queues_access);
-
-    /*
-    pthread_mutex_lock(&queues_access);
-
-    if (next_dir_in_queue == NULL)
-    {
-        // printf("going to enqueue threaddddddddddd\n");
-        my_thread_entry->dir = NULL;
-        strcpy(my_thread_entry->path, "\0");
-        my_thread_entry->next = NULL;
-        enqueue_thread(my_thread_entry);
-        
-        // if (thread_q->len == threads_initialized)
-        // {
-        //    pthread_cond_signal(&all_sleep);
-        //}
-        
-    }
-    pthread_mutex_unlock(&queues_access);
-    */
+    
     if (next_dir_in_queue != NULL)
     {
         /* the thread need to handle the directory (strat scan_dir from the beginning) */
