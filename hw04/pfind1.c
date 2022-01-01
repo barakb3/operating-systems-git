@@ -215,7 +215,6 @@ void *thread_func(void *thread_param)
 
         pthread_cond_wait(&my_condition_variable, &queues_access);
         printf("signal received by thread number %d\n", my_thread_entry->debug_number);
-
         if (done == 1)
         {
             printf("thread number %d exited\n", my_thread_entry->debug_number);
@@ -294,6 +293,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                     next_thread_in_queue->dir = new_dir;
                     strcpy(next_thread_in_queue->path, curr_path);
                     pthread_cond_signal(next_thread_in_queue->my_condition_variable);
+                    printf("signal sent to thread number %d\n", next_thread_in_queue->debug_number);
                 }
             }
         }
