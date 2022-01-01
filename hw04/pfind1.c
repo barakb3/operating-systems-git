@@ -315,12 +315,12 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
-    printf("dir dequeue: %s\n", next_dir_in_queue->path);
     pthread_mutex_unlock(&queues_access);
 
     if (next_dir_in_queue != NULL)
     {
         /* the thread need to handle the directory (strat scan_dir from the beginning) */
+        printf("dir dequeue: %s\n", next_dir_in_queue->path);
         my_thread_entry->dir = next_dir_in_queue->dir;
         strcpy(my_thread_entry->path, next_dir_in_queue->path);
         scan_dir(my_thread_entry);
