@@ -31,7 +31,6 @@ typedef struct THREAD_ENTRY
     DIR *dir;
     char path[PATH_MAX];
     struct THREAD_ENTRY *next;
-    int debug_number;
 } THREAD_ENTRY;
 
 typedef struct THREAD_FIFO_Q
@@ -136,10 +135,6 @@ void *thread_func(void *thread_param)
     pthread_mutex_lock(&thread_initializer);
     /* increment the number of threads started by one */
     threads_initialized++;
-
-
-    my_thread_entry->debug_number = threads_initialized;
-
 
     if (threads_initialized + threads_failed == num_of_threads)
     {
@@ -257,9 +252,6 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
                     next_thread_in_queue->dir = new_dir;
                     strcpy(next_thread_in_queue->path, curr_path);
                     pthread_cond_signal(next_thread_in_queue->my_condition_variable);
-                    /*
-                    printf("signal sent to thread number %d\n", next_thread_in_queue->debug_number);
-                    */
                 }
             }
         }
