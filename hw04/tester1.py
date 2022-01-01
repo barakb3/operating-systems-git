@@ -65,7 +65,7 @@ if os.path.exists('tree'):
 	os.system('sudo rm -rf tree')
 OK, ERR = create('tree', depth=4)
 
-os.system('gcc -O3 -D_POSIX_C_SOURCE=200809 -Wall -std=c11 -pthread pfind.c')
+os.system('gcc-5.3.0 -O3 -D_POSIX_C_SOURCE=200809 -Wall -std=c11 -pthread pfind.c')
 print('\n=================================================================\n')
 
 
