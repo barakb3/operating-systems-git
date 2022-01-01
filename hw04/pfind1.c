@@ -366,6 +366,11 @@ THREAD_ENTRY *dequeue_thread(THREAD_FIFO_Q *thread_q)
     THREAD_ENTRY *ret = thread_q->first;
     thread_q->first = thread_q->first->next;
     thread_q->len--;
+    if (thread_q->len == 1)
+    {
+        thread_q->last = thread_q->first;
+    }
+    
     printf("cv num %lu dequeued the queue\n", ret->my_condition_variable);
     // printf("length of thread_q after dequeuing thread is %d\n", thread_q->len);
     return ret;
@@ -584,5 +589,6 @@ int main(int argc, char *argv[])
     pthread_mutex_destroy(&queues_access);
 
     printf("Done searching, found %d files\n", num_of_files_found);
+    printf("status is: %d", status);
     return status;
 }
