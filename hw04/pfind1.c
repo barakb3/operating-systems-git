@@ -206,6 +206,13 @@ void *thread_func(void *thread_param)
     do
     {
         pthread_mutex_lock(&queues_access);
+        /* if didn't find dir to handle in scan dir it goes bacl here and enter the queue */
+        
+        my_thread_entry->dir = NULL;
+        strcpy(my_thread_entry->path, "\0");
+        my_thread_entry->next = NULL;
+        enqueue_thread(my_thread_entry);
+
         if (thread_q->len == threads_initialized)
         {
             printf("all sleeppppppppppppppp\n");
@@ -322,6 +329,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
     }
     /* thread finished scanning some dir and now checks if there are any new directories to work on */
     // printf("thread number %lu finished dir %s\n", pthread_self(), my_thread_entry->path);
+    /*
     pthread_mutex_lock(&queues_access);
     next_dir_in_queue = dequeue_dir(dir_q);
 
@@ -332,15 +340,15 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
         strcpy(my_thread_entry->path, "\0");
         my_thread_entry->next = NULL;
         enqueue_thread(my_thread_entry);
-        /*
-        if (thread_q->len == threads_initialized)
-        {
-            pthread_cond_signal(&all_sleep);
-        }
-        */
+        
+        // if (thread_q->len == threads_initialized)
+        // {
+        //    pthread_cond_signal(&all_sleep);
+        //}
+        
     }
     pthread_mutex_unlock(&queues_access);
-
+    */
     if (next_dir_in_queue != NULL)
     {
         /* the thread need to handle the directory (strat scan_dir from the beginning) */
