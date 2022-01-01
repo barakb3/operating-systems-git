@@ -432,7 +432,7 @@ void enqueue_dir(DIR *dir, char *path)
 void enqueue_thread(THREAD_ENTRY *my_thread_entry)
 {
     THREAD_ENTRY *th;
-    printf("thread number %d entered the queue\n", my_thread_entry->debug_number);
+
     if (thread_q->len == 0)
     {
         thread_q->first = my_thread_entry;
@@ -446,7 +446,7 @@ void enqueue_thread(THREAD_ENTRY *my_thread_entry)
     thread_q->len++;
 
     th = thread_q->first;
-    printf("thread number %d enqueued tto queue: ", my_thread_entry->debug_number);
+    printf("thread number %d enqueued to queue: ", my_thread_entry->debug_number);
     while (th != NULL)
     {
         printf("%d  ", th->debug_number);
