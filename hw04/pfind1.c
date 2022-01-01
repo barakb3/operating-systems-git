@@ -81,7 +81,7 @@ DIR_FIFO_Q *initialize_directories_queue()
         fprintf(stderr, "Failed allocating memory for the directories queue due to errno: %s\n", strerror(errno));
         return NULL;
     }
-
+    /*
     dir_q->first = (DIR_ENTRY *)malloc(sizeof(DIR_ENTRY));
     if (dir_q->first == NULL)
     {
@@ -89,7 +89,7 @@ DIR_FIFO_Q *initialize_directories_queue()
         fprintf(stderr, "Failed allocating memory for the directories entry due to errno: %s\n", strerror(errno));
         return NULL;
     }
-
+    */
     dir_q->last = dir_q->first;
     return dir_q;
 }
