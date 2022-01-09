@@ -412,7 +412,6 @@ int main(int argc, char *argv[])
     }
 
     root_path = argv[1];
-    strcat(root_path, "/");
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
     root = opendir(root_path);
@@ -435,7 +434,7 @@ int main(int argc, char *argv[])
     }
 
     enqueue_dir(root, root_path);
-    printf("serach term is: %s\n", argv[1]);
+
     /* initializing the threads_id array */
     threads_id = initialize_threads_id_arr();
     if (threads_id == NULL)
