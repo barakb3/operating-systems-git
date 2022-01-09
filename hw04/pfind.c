@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
     }
 
     enqueue_dir(root, root_path);
-    printf("serach term is: %s\n", argv[2]);
+    printf("serach term is: %s\n", argv[1]);
     /* initializing the threads_id array */
     threads_id = initialize_threads_id_arr();
     if (threads_id == NULL)
