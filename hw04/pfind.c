@@ -212,9 +212,7 @@ void scan_dir(THREAD_ENTRY *my_thread_entry)
 
         /* modifying the path of the current dirent */
         strcpy(curr_path, my_thread_entry->path);
-        printf("curr_path before strcat: %s\n", curr_path);
         strcat(curr_path, curr_name);
-        printf("curr_path after strcat: %s\n", curr_path);
 
         /* extracting dirent type by modifing the stat structure to represent the current dirent */
         if (stat(curr_path, &curr_statbuf) != 0)
@@ -412,11 +410,9 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Number of arguments isn't valid\n");
         exit(status);
     }
-    printf("argv[1]: %s\nargv[2]: %s\nargv[3]: %s\n\n", argv[1], argv[2], argv[3]);
     strcpy(root_path, argv[1]);
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
-    printf("argv[1]: %s\nargv[2]: %s\nargv[3]: %d\n\n", root_path, search_term, num_of_threads);
     root = opendir(root_path);
 
     if (root == NULL)
