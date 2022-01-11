@@ -410,8 +410,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Number of arguments isn't valid\n");
         exit(status);
     }
-
-    root_path = argv[1];
+    printf("argv[1]: %s\nargv[2]: %s\nargv[3]: %s\n", argv[1], argv[2], argv[3]);
+    strcpy(root_path, argv[1]);
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
     root = opendir(root_path);
