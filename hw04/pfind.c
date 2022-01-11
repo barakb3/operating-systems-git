@@ -415,7 +415,7 @@ int main(int argc, char *argv[])
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
     root = opendir(root_path);
-
+    printf("root_path: %s\nsearch term: %s\nnum of threads: %d\n", root_path, search_term, num_of_threads);
     if (root == NULL)
     {
         /* root directory can't be searched */
