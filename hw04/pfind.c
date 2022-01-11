@@ -60,8 +60,8 @@ atomic_int num_of_files_found = 0;
 DIR_FIFO_Q *dir_q;
 THREAD_FIFO_Q *thread_q;
 
-char *search_term;
-char *root_path;
+static char *search_term;
+static char *root_path;
 
 pthread_mutex_t thread_initializer;
 pthread_mutex_t queues_access;
