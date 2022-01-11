@@ -432,7 +432,11 @@ int main(int argc, char *argv[])
         /* initializing failed */
         exit(status);
     }
-    strcat(root_path, "/");
+    if (root_path[strlen(root_path)-1] != "/")
+    {
+        strcat(root_path, "/");
+    }
+
     enqueue_dir(root, root_path);
 
     /* initializing the threads_id array */
