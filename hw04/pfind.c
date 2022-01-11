@@ -61,7 +61,6 @@ DIR_FIFO_Q *dir_q;
 THREAD_FIFO_Q *thread_q;
 
 char *search_term;
-char *root_path;
 
 pthread_mutex_t thread_initializer;
 pthread_mutex_t queues_access;
@@ -411,16 +410,15 @@ int main(int argc, char *argv[])
         exit(status);
     }
 
-    root_path = argv[1];
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
-    root = opendir(root_path);
+    root = opendir(argv[1]);
 
     if (root == NULL)
     {
         /* root directory can't be searched */
         status = FAILURE;
-        printf("Directory %s: Permission denied.\n", root_path);
+        printf("Directory %s: Permission denied.\n", argv[1]);
         printf("Done searching, found %d files\n", num_of_files_found);
         exit(status);
     }
@@ -433,7 +431,7 @@ int main(int argc, char *argv[])
         exit(status);
     }
 
-    enqueue_dir(root, root_path);
+    enqueue_dir(root, argv[1]);
 
     /* initializing the threads_id array */
     threads_id = initialize_threads_id_arr();
