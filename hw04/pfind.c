@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
         /* initializing failed */
         exit(status);
     }
-
+    strcat(root_path, "/");
     enqueue_dir(root, root_path);
 
     /* initializing the threads_id array */
