@@ -61,7 +61,6 @@ DIR_FIFO_Q *dir_q;
 THREAD_FIFO_Q *thread_q;
 
 char *search_term;
-char *root_path;
 
 pthread_mutex_t thread_initializer;
 pthread_mutex_t queues_access;
@@ -401,6 +400,7 @@ int main(int argc, char *argv[])
     DIR *root;
     pthread_t *threads_id;
     THREAD_ENTRY *th;
+    char root_path[PATH_MAX];
 
     status = SUCCESS;
     if (argc != 4)
@@ -411,7 +411,7 @@ int main(int argc, char *argv[])
         exit(status);
     }
 
-    root_path = argv[1];
+    strcpy(root_path, argv[1]);
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
     root = opendir(root_path);
