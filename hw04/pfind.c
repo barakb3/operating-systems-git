@@ -401,7 +401,6 @@ int main(int argc, char *argv[])
     DIR *root;
     pthread_t *threads_id;
     THREAD_ENTRY *th;
-    char catch_path[PATH_MAX];
 
     status = SUCCESS;
     if (argc != 4)
@@ -411,12 +410,12 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Number of arguments isn't valid\n");
         exit(status);
     }
-    printf("argv[1]: %s\nargv[2]: %s\nargv[3]: %s\n", argv[1], argv[2], argv[3]);
+
     root_path = argv[1];
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
     root = opendir(root_path);
-    printf("root_path: %s\nsearch term: %s\nnum of threads: %d\n", root_path, search_term, num_of_threads);
+
     if (root == NULL)
     {
         /* root directory can't be searched */
@@ -434,13 +433,6 @@ int main(int argc, char *argv[])
         exit(status);
     }
 
-    strcpy(catch_path, readdir(root)->d_name);
-    while (strcmp(catch_path, "."))
-    {
-        strcpy(catch_path, readdir(root)->d_name);
-    }
-    realpath(catch_path, root_path);
-    
     enqueue_dir(root, root_path);
 
     /* initializing the threads_id array */
