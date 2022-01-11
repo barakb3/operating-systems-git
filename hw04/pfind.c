@@ -414,8 +414,6 @@ int main(int argc, char *argv[])
     root_path = argv[1];
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
-    strcat(root_path, "/");
-    
     root = opendir(root_path);
     printf("root_path: %s\nsearch term: %s\nnum of threads: %d\n", root_path, search_term, num_of_threads);
     if (root == NULL)
