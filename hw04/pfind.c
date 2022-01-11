@@ -401,6 +401,7 @@ int main(int argc, char *argv[])
     DIR *root;
     pthread_t *threads_id;
     THREAD_ENTRY *th;
+    char curr_path[PATH_MAX];
 
     status = SUCCESS;
     if (argc != 4)
@@ -433,6 +434,8 @@ int main(int argc, char *argv[])
         exit(status);
     }
     strcat(root_path, "/");
+    getcwd(curr_path, sizeof(curr_path));
+    printf("current work directory: %s\n", curr_path);
     enqueue_dir(root, root_path);
 
     /* initializing the threads_id array */
