@@ -411,8 +411,8 @@ int main(int argc, char *argv[])
         exit(status);
     }
 
-    strcpy(root_path, argv[1]);
-    strcpy(search_term, argv[2]);
+    root_path = argv[1];
+    search_term = argv[2];
     num_of_threads = atoi(argv[3]);
     root = opendir(root_path);
 
