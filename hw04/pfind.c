@@ -60,8 +60,8 @@ atomic_int num_of_files_found = 0;
 DIR_FIFO_Q *dir_q;
 THREAD_FIFO_Q *thread_q;
 
-static char *search_term;
-static char *root_path;
+char *search_term;
+char *root_path;
 
 pthread_mutex_t thread_initializer;
 pthread_mutex_t queues_access;
@@ -411,7 +411,7 @@ int main(int argc, char *argv[])
         exit(status);
     }
     printf("argv[1]: %s\nargv[2]: %s\nargv[3]: %s\n", argv[1], argv[2], argv[3]);
-    strcpy(root_path, argv[1]);
+    root_path = argv[1];
     search_term = argv[2];
     num_of_threads = atoi(argv[3]);
     root = opendir(root_path);
