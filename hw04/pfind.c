@@ -432,7 +432,8 @@ int main(int argc, char *argv[])
         /* initializing failed */
         exit(status);
     }
-    if (root_path[strlen(root_path)-1] != "/")
+
+    if (root_path[strlen(root_path)-1] != '/')
     {
         strcat(root_path, "/");
     }
